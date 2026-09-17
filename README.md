@@ -2,6 +2,28 @@
 
 A small self-hosted web app for tracking a pool/snooker team's players, weekly match results, and stats — a public results page for anyone to view, plus an admin area for managing everything. Ships pre-loaded with demo data (fictional players/results) so you can see it working before entering your own.
 
+## Admin screenshots
+
+The public results page is what you'd share with your league — everything below is the admin side you manage it from, gated behind your own password.
+
+**Team Stats overview** — live win rate, points leader, league points, and a full performance table with per-player form.
+![Admin stats overview](docs/screenshots/admin-stats.png)
+
+**Match Entry** — log each week's date, venue, opponent, score and BYE weeks in a couple of clicks.
+![Admin match entry](docs/screenshots/admin-match-entry.png)
+
+**Roster** — set who's playing each season, their role (Captain/Vice-Captain/Member) and pick status (Regular/Sub).
+![Admin roster](docs/screenshots/admin-roster.png)
+
+**Players** — the permanent player list: original-member flag, joined/left dates, notes.
+![Admin players](docs/screenshots/admin-players.png)
+
+**Seasons & backup** — manage seasons and export/import the full dataset as JSON.
+![Admin seasons](docs/screenshots/admin-seasons.png)
+
+Admin access sits behind a password screen:
+![Admin login](docs/screenshots/admin-login.png)
+
 ## Making it your team's
 
 1. Replace `public/logo-mark.png` with your own club/team logo (any image works; the app doesn't require a specific shape).
