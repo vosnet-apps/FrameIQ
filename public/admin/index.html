@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FrameIQ Admin — Sample Team</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../favicon-512.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="../logo-mark.png" alt="" class="brand-logo" />
+        <div class="brand-text">
+          <div class="brand-name">FRAME<span class="brand-name-accent">IQ</span></div>
+          <div class="brand-tagline">// Pool Performance Intelligence</div>
+          <div class="brand-team">Sample Team</div>
+        </div>
+      </div>
+      <nav id="tabs" class="sidebar-nav">
+        <button class="tab-btn active" data-tab="stats">Stats</button>
+        <button class="tab-btn" data-tab="matches">Match Entry</button>
+        <button class="tab-btn" data-tab="roster">Roster</button>
+        <button class="tab-btn" data-tab="players">Players</button>
+        <button class="tab-btn" data-tab="seasons">Seasons</button>
+      </nav>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar topbar-grid">
+        <div class="topbar-left">
+          <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle menu">☰</button>
+        </div>
+        <div class="topbar-center">
+          <div class="season-picker">
+            <label for="seasonSelect">Season</label>
+            <select id="seasonSelect"></select>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <a href="/" class="topbar-link">View public site</a>
+          <button id="logoutBtn" class="secondary">Log out</button>
+        </div>
+      </header>
+
+      <main>
+    <section id="tab-stats" class="tab-panel active">
+      <h2 class="kpi-row-title">Team Stats</h2>
+      <div id="kpiRow" class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Win Rate</div>
+          <div class="kpi-value" id="kpiWinRate">—</div>
+          <div class="kpi-sub" id="kpiWinRateSub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Points Leader</div>
+          <div class="kpi-value" id="kpiPointsLeader">—</div>
+          <div class="kpi-sub" id="kpiPointsLeaderSub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Matches Played</div>
+          <div class="kpi-value" id="kpiMatchesPlayed">—</div>
+          <div class="kpi-sub">Includes BYE weeks</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Best Frame Win %</div>
+          <div class="kpi-value" id="kpiBestFrame">—</div>
+          <div class="kpi-sub" id="kpiBestFrameSub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">League Points</div>
+          <div class="kpi-value" id="kpiLeaguePoints">—</div>
+          <div class="kpi-sub">1 per frame won, +1 bonus for winning the match</div>
+        </div>
+      </div>
+
+      <div class="panel-header">
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" data-view="performance">Performance</button>
+          <button class="view-toggle-btn" data-view="results">Match Results</button>
+        </div>
+        <label class="all-time-toggle" id="allTimeToggleWrap"><input type="checkbox" id="allTimeToggle" /> All-time (career)</label>
+      </div>
+
+      <div id="performanceView">
+        <div class="table-scroll">
+        <table id="statsTable" class="data-table sortable">
+          <thead>
+            <tr>
+              <th data-key="name">Player</th>
+              <th data-key="appearances">Appearances</th>
+              <th data-key="singles_won">Singles Won</th>
+              <th data-key="doubles_won">Doubles Won</th>
+              <th data-key="total_points">Total Points</th>
+              <th data-key="points_per_appearance">Points/Game</th>
+              <th data-key="frame_win_pct">Frame Win %</th>
+              <th class="no-sort">Form</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="hint">3 points per singles won, 1 point per doubles won. Frame Win % excludes any imported rows where losses weren't recorded.</p>
+        <p class="hint">Form shows each player's last 5 weeks played, most recent on the right. <span class="form-chip form-w" style="width:18px;height:18px;font-size:0.62rem;">W</span> = won more frames than lost that week, <span class="form-chip form-l" style="width:18px;height:18px;font-size:0.62rem;">L</span> = lost more than won. <span class="form-chip form-split" style="width:18px;height:18px;font-size:0.62rem;">S</span> (Split) = played both singles and doubles and won one, lost the other — a single frame can never be a draw, but a week with two frames can end up even.</p>
+      </div>
+
+      <div id="resultsView" hidden>
+        <div class="table-scroll">
+        <table id="resultsTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Date</th>
+              <th>Venue</th>
+              <th>Opponent</th>
+              <th>Score</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p id="resultsEmpty" class="hint" hidden>No match results recorded for this season.</p>
+      </div>
+    </section>
+
+    <section id="tab-matches" class="tab-panel">
+      <div class="panel-header">
+        <h2>Match Weeks</h2>
+        <form id="addWeekForm" class="inline-form">
+          <input type="number" id="newWeekNumber" placeholder="Week #" min="1" required />
+          <input type="date" id="newWeekDate" />
+          <input type="text" id="newWeekOpponent" placeholder="Opponent (optional)" />
+          <label><input type="checkbox" id="newWeekBye" /> BYE week</label>
+          <button type="submit">Add Week</button>
+        </form>
+      </div>
+      <div id="weeksList" class="weeks-list"></div>
+
+      <div id="weekEntryPanel" class="week-entry-panel" hidden>
+        <h3 id="weekEntryTitle"></h3>
+        <div id="weekDetailsForm" class="week-details-form">
+          <label>Opponent <input type="text" id="detailOpponent" placeholder="Team name" /></label>
+          <label>Date <input type="date" id="detailDate" /></label>
+          <label>Venue
+            <select id="detailVenue">
+              <option value="">—</option>
+              <option value="Home">Home</option>
+              <option value="Away">Away</option>
+            </select>
+          </label>
+          <label>Score for <input type="number" id="detailScoreFor" min="0" /></label>
+          <label>Score against <input type="number" id="detailScoreAgainst" min="0" /></label>
+          <label>BYE week <input type="checkbox" id="detailIsBye" /></label>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead id="weekEntryHead">
+            <tr>
+              <th>Player</th>
+              <th>Singles</th>
+              <th>Doubles</th>
+            </tr>
+          </thead>
+          <tbody id="weekEntryBody"></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-roster" class="tab-panel">
+      <div class="panel-header">
+        <h2>Season Roster</h2>
+        <form id="addRosterForm" class="inline-form">
+          <select id="rosterPlayerSelect"></select>
+          <select id="rosterRoleSelect">
+            <option>Member</option>
+            <option>Vice-Captain</option>
+            <option>Captain</option>
+          </select>
+          <select id="rosterPickSelect">
+            <option>Regular</option>
+            <option>Sub</option>
+          </select>
+          <button type="submit">Add to Roster</button>
+        </form>
+      </div>
+      <div class="table-scroll">
+      <table id="rosterTable" class="data-table sortable">
+        <thead>
+          <tr>
+            <th data-key="name">Player</th>
+            <th data-key="is_original">Original</th>
+            <th data-key="role">Role</th>
+            <th data-key="pick_status">Pick Status</th>
+            <th class="no-sort"></th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody"></tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="tab-players" class="tab-panel">
+      <div class="panel-header">
+        <h2>All Players</h2>
+        <button id="showAddPlayer">+ Add Player</button>
+      </div>
+      <form id="addPlayerForm" class="card-form" hidden>
+        <input type="text" id="newPlayerName" placeholder="Name" required />
+        <label><input type="checkbox" id="newPlayerOriginal" /> Original member</label>
+        <label>Joined <input type="date" id="newPlayerJoined" /></label>
+        <label>Left <input type="date" id="newPlayerLeft" /></label>
+        <input type="text" id="newPlayerNotes" placeholder="Notes (optional)" />
+        <button type="submit">Save</button>
+      </form>
+      <div class="table-scroll">
+      <table id="playersTable" class="data-table sortable">
+        <thead>
+          <tr>
+            <th data-key="name">Name</th>
+            <th data-key="is_original">Original</th>
+            <th data-key="joined_date">Joined</th>
+            <th data-key="left_date">Left</th>
+            <th data-key="notes">Notes</th>
+            <th class="no-sort"></th>
+          </tr>
+        </thead>
+        <tbody id="playersBody"></tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="tab-seasons" class="tab-panel">
+      <div class="panel-header">
+        <h2>Seasons</h2>
+        <form id="addSeasonForm" class="inline-form">
+          <input type="text" id="newSeasonName" placeholder="Season name (e.g. Winter 26-27)" required />
+          <button type="submit">Add Season</button>
+        </form>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th>Start</th><th>End</th><th>Active</th><th></th></tr>
+        </thead>
+        <tbody id="seasonsBody"></tbody>
+      </table>
+      </div>
+
+      <div class="panel-header" style="margin-top: 32px;">
+        <h2>Backup &amp; Restore</h2>
+      </div>
+      <div class="card-form">
+        <a id="exportBtn" href="/api/admin/export" download>Export all data</a>
+        <span class="hint" style="margin: 0;">Downloads everything as a JSON file — use this before moving to a new host.</span>
+      </div>
+      <div class="card-form">
+        <input type="file" id="importFile" accept="application/json" />
+        <button id="importBtn">Import backup</button>
+        <span class="hint" style="margin: 0;">Only works into an empty database (e.g. a freshly deployed instance) — won't overwrite existing data.</span>
+      </div>
+    </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

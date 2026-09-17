@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FrameIQ Admin Login — Sample Team</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../favicon-512.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" method="POST" action="/admin/login">
+      <div class="brand">
+        <img src="../logo-mark.png" alt="" class="brand-logo" />
+        <h1>Admin Login</h1>
+      </div>
+      <p class="hint" id="loginError" hidden>Incorrect password. Try again.</p>
+      <label>Password
+        <input type="password" name="password" autofocus required />
+      </label>
+      <button type="submit">Log in</button>
+      <a href="/" class="topbar-link">← Back to public site</a>
+    </form>
+  </div>
+  <script>
+    if (new URLSearchParams(window.location.search).get('error')) {
+      document.getElementById('loginError').hidden = false;
+    }
+  </script>
+</body>
+</html>

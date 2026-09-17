@@ -1,0 +1,1063 @@
+{
+  "players": [
+    {
+      "name": "Danny Hastings",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Craig Mellor",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Paul Whitfield",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Dave Sutton",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Steve Harkness",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Liam Foster",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Sophie Marchetti",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Tom Pearce",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Ravi Kapoor",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Frank Delaney",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Ollie Grant",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Callum Doyle",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Freddie Lang",
+      "is_original": false,
+      "left_date_text": null,
+      "is_ex_member": false,
+      "notes": null
+    },
+    {
+      "name": "Keith Bramwell",
+      "is_original": false,
+      "left_date_text": "26th May 2025",
+      "is_ex_member": true,
+      "notes": null
+    },
+    {
+      "name": "Nadia Yilmaz",
+      "is_original": true,
+      "left_date_text": null,
+      "is_ex_member": true,
+      "notes": "Listed as 'Original' with no recorded leave date in source sheet"
+    },
+    {
+      "name": "Terry Cobb (Rack)",
+      "is_original": true,
+      "left_date_text": "6th May 2026",
+      "is_ex_member": true,
+      "notes": null
+    }
+  ],
+  "seasons": {
+    "Winter 25-26": {
+      "is_active": false,
+      "sort_order": 1,
+      "roster": [
+        {
+          "name": "Danny Hastings",
+          "role": "Captain",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Paul Whitfield",
+          "role": "Vice-Captain",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Frank Delaney",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Dave Sutton",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Craig Mellor",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Terry Cobb (Rack)",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Steve Harkness",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Ollie Grant",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Callum Doyle",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Liam Foster",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Sophie Marchetti",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Tom Pearce",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Ravi Kapoor",
+          "role": "Member",
+          "pick_status": "Sub"
+        }
+      ],
+      "aggregate_stats": [
+        {
+          "name": "Danny Hastings",
+          "weeks_played": 16,
+          "singles_won": 10,
+          "doubles_won": 9
+        },
+        {
+          "name": "Terry Cobb (Rack)",
+          "weeks_played": 16,
+          "singles_won": 8,
+          "doubles_won": 9
+        },
+        {
+          "name": "Paul Whitfield",
+          "weeks_played": 12,
+          "singles_won": 9,
+          "doubles_won": 8
+        },
+        {
+          "name": "Dave Sutton",
+          "weeks_played": 16,
+          "singles_won": 7,
+          "doubles_won": 8
+        },
+        {
+          "name": "Liam Foster",
+          "weeks_played": 12,
+          "singles_won": 7,
+          "doubles_won": 8
+        },
+        {
+          "name": "Craig Mellor",
+          "weeks_played": 9,
+          "singles_won": 3,
+          "doubles_won": 6
+        },
+        {
+          "name": "Sophie Marchetti",
+          "weeks_played": 6,
+          "singles_won": 2,
+          "doubles_won": 3
+        },
+        {
+          "name": "Ravi Kapoor",
+          "weeks_played": 2,
+          "singles_won": 1,
+          "doubles_won": 2
+        },
+        {
+          "name": "Frank Delaney",
+          "weeks_played": 2,
+          "singles_won": 1,
+          "doubles_won": 1
+        },
+        {
+          "name": "Steve Harkness",
+          "weeks_played": 3,
+          "singles_won": 0,
+          "doubles_won": 1
+        },
+        {
+          "name": "Ollie Grant",
+          "weeks_played": 2,
+          "singles_won": 0,
+          "doubles_won": 1
+        },
+        {
+          "name": "Tom Pearce",
+          "weeks_played": 1,
+          "singles_won": 0,
+          "doubles_won": 0
+        },
+        {
+          "name": "Callum Doyle",
+          "weeks_played": 0,
+          "singles_won": 0,
+          "doubles_won": 0
+        }
+      ]
+    },
+    "Summer 2026": {
+      "is_active": true,
+      "sort_order": 2,
+      "roster": [
+        {
+          "name": "Danny Hastings",
+          "role": "Captain",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Craig Mellor",
+          "role": "Vice-Captain",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Paul Whitfield",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Dave Sutton",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Steve Harkness",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Liam Foster",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Sophie Marchetti",
+          "role": "Member",
+          "pick_status": "Regular"
+        },
+        {
+          "name": "Tom Pearce",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Ravi Kapoor",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Frank Delaney",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Ollie Grant",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Callum Doyle",
+          "role": "Member",
+          "pick_status": "Sub"
+        },
+        {
+          "name": "Freddie Lang",
+          "role": "Member",
+          "pick_status": "Sub"
+        }
+      ],
+      "match_rows": [
+        {
+          "week": 1,
+          "name": "Danny Hastings",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 1,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 1,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 1,
+          "name": "Craig Mellor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 1,
+          "name": "Sophie Marchetti",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 1,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 3,
+          "name": "Danny Hastings",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 3,
+          "name": "Liam Foster",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 3,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 3,
+          "name": "Dave Sutton",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 3,
+          "name": "Ravi Kapoor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 3,
+          "name": "Steve Harkness",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 4,
+          "name": "Craig Mellor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 0
+        },
+        {
+          "week": 4,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 4,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 4,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 4,
+          "name": "Sophie Marchetti",
+          "singles_won": 0,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 4,
+          "name": "Tom Pearce",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 4,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 5,
+          "name": "Craig Mellor",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 5,
+          "name": "Liam Foster",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 5,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 5,
+          "name": "Sophie Marchetti",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 5,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 5,
+          "name": "Steve Harkness",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 6,
+          "name": "Danny Hastings",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 6,
+          "name": "Paul Whitfield",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 6,
+          "name": "Ravi Kapoor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 6,
+          "name": "Tom Pearce",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 6,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 6,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Steve Harkness",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Craig Mellor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 7,
+          "name": "Ravi Kapoor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 8,
+          "name": "Danny Hastings",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 8,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 8,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 8,
+          "name": "Dave Sutton",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 8,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 8,
+          "name": "Craig Mellor",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 8,
+          "name": "Ravi Kapoor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 9,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 9,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 9,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 9,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 9,
+          "name": "Danny Hastings",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 10,
+          "name": "Ravi Kapoor",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 10,
+          "name": "Liam Foster",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 10,
+          "name": "Paul Whitfield",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 10,
+          "name": "Dave Sutton",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 10,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 10,
+          "name": "Danny Hastings",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 12,
+          "name": "Ravi Kapoor",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 12,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 12,
+          "name": "Paul Whitfield",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 12,
+          "name": "Dave Sutton",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 12,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 12,
+          "name": "Danny Hastings",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 13,
+          "name": "Danny Hastings",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 13,
+          "name": "Sophie Marchetti",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 13,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 13,
+          "name": "Paul Whitfield",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 13,
+          "name": "Steve Harkness",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 13,
+          "name": "Craig Mellor",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 14,
+          "name": "Danny Hastings",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 14,
+          "name": "Craig Mellor",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 14,
+          "name": "Liam Foster",
+          "singles_won": 1,
+          "singles_lost": 0,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 14,
+          "name": "Paul Whitfield",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        },
+        {
+          "week": 14,
+          "name": "Sophie Marchetti",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 0,
+          "doubles_lost": 1
+        },
+        {
+          "week": 14,
+          "name": "Dave Sutton",
+          "singles_won": 0,
+          "singles_lost": 1,
+          "doubles_won": 1,
+          "doubles_lost": 0
+        }
+      ],
+      "week_details": [
+        {
+          "week_number": 1,
+          "match_date": "2026-05-12",
+          "opponent": "Chalk & Cheese",
+          "venue": "Home",
+          "score_for": 7,
+          "score_against": 2,
+          "is_bye": 0
+        },
+        {
+          "week_number": 2,
+          "match_date": "2026-05-19",
+          "opponent": "BYE",
+          "venue": null,
+          "score_for": 7,
+          "score_against": 0,
+          "is_bye": 1
+        },
+        {
+          "week_number": 3,
+          "match_date": "2026-05-26",
+          "opponent": "Riverside B",
+          "venue": "Home",
+          "score_for": 4,
+          "score_against": 5,
+          "is_bye": 0
+        },
+        {
+          "week_number": 4,
+          "match_date": "2026-06-02",
+          "opponent": "The Break Club",
+          "venue": "Away",
+          "score_for": 5,
+          "score_against": 4,
+          "is_bye": 0
+        },
+        {
+          "week_number": 5,
+          "match_date": "2026-06-09",
+          "opponent": "Kingsway A",
+          "venue": "Home",
+          "score_for": 3,
+          "score_against": 6,
+          "is_bye": 0
+        },
+        {
+          "week_number": 6,
+          "match_date": "2026-06-16",
+          "opponent": "The Sharpshooters",
+          "venue": "Away",
+          "score_for": 6,
+          "score_against": 3,
+          "is_bye": 0
+        },
+        {
+          "week_number": 7,
+          "match_date": "2026-06-30",
+          "opponent": "Fox at Ashdown",
+          "venue": "Home",
+          "score_for": 8,
+          "score_against": 1,
+          "is_bye": 0
+        },
+        {
+          "week_number": 8,
+          "match_date": "2026-07-07",
+          "opponent": "The Rack Pack",
+          "venue": "Away",
+          "score_for": 6,
+          "score_against": 3,
+          "is_bye": 0
+        },
+        {
+          "week_number": 9,
+          "match_date": "2026-07-14",
+          "opponent": "The Old Guard",
+          "venue": "Away",
+          "score_for": 7,
+          "score_against": 2,
+          "is_bye": 0
+        },
+        {
+          "week_number": 10,
+          "match_date": "2026-08-04",
+          "opponent": "Chalk & Cheese",
+          "venue": "Away",
+          "score_for": 5,
+          "score_against": 4,
+          "is_bye": 0
+        },
+        {
+          "week_number": 11,
+          "match_date": "2026-08-11",
+          "opponent": "BYE",
+          "venue": null,
+          "score_for": 7,
+          "score_against": 0,
+          "is_bye": 1
+        },
+        {
+          "week_number": 12,
+          "match_date": "2026-08-18",
+          "opponent": "Riverside B",
+          "venue": "Away",
+          "score_for": 3,
+          "score_against": 6,
+          "is_bye": 0
+        },
+        {
+          "week_number": 13,
+          "match_date": "2026-08-25",
+          "opponent": "The Break Club",
+          "venue": "Away",
+          "score_for": 6,
+          "score_against": 3,
+          "is_bye": 0
+        },
+        {
+          "week_number": 14,
+          "match_date": "2026-09-08",
+          "opponent": "Kingsway A",
+          "venue": "Away",
+          "score_for": 3,
+          "score_against": 6,
+          "is_bye": 0
+        },
+        {
+          "week_number": 15,
+          "match_date": "2026-09-15",
+          "opponent": "The Sharpshooters",
+          "venue": "Home",
+          "score_for": 5,
+          "score_against": 4,
+          "is_bye": 0
+        }
+      ]
+    }
+  }
+}
