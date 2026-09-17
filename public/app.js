@@ -152,7 +152,7 @@ function renderStats(rows) {
   tbody.innerHTML = sorted
     .map(
       (r) => `<tr>
-        <td>${r.name}</td>
+        <td><a class="player-link" href="/player.html?id=${r.player_id}">${r.name}</a></td>
         <td>${r.appearances}</td>
         <td>${r.singles_won}</td>
         <td>${r.doubles_won}</td>

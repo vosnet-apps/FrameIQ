@@ -104,6 +104,96 @@ app.delete('/api/players/:id', requireAdmin, (req, res) => {
   res.status(204).end();
 });
 
+// ---------- Player profile (public) ----------
+// Career totals, a per-season breakdown, and full match-by-match history for one player.
+// Public like /api/stats - it's the same numbers, just sliced down to a single player.
+function shapePlayerStats(r) {
+  return {
+    appearances: r.appearances || 0,
+    singles_won: r.singles_won || 0,
+    doubles_won: r.doubles_won || 0,
+    total_points: r.total_points || 0,
+    points_per_appearance: r.appearances > 0 ? r.total_points / r.appearances : 0,
+    frame_win_pct: r.frames_with_known_result > 0 ? r.frames_won_known / r.frames_with_known_result : null,
+  };
+}
+
+app.get('/api/players/:id/profile', (req, res) => {
+  const playerId = Number(req.params.id);
+  const player = get('SELECT * FROM players WHERE id = ?', [playerId]);
+  if (!player) return res.status(404).json({ error: 'not found' });
+
+  const settings = getSettings();
+  const pointsParams = [settings.points_per_singles_win, settings.points_per_doubles_win];
+
+  const careerRow = get(
+    `SELECT
+       SUM(e.appearances) AS appearances,
+       SUM(e.singles_won) AS singles_won,
+       SUM(e.doubles_won) AS doubles_won,
+       (SUM(e.singles_won) * ? + SUM(e.doubles_won) * ?) AS total_points,
+       SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.singles_lost + e.doubles_won + e.doubles_lost ELSE 0 END) AS frames_with_known_result,
+       SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.doubles_won ELSE 0 END) AS frames_won_known
+     FROM match_entries e
+     WHERE e.player_id = ?`,
+    [...pointsParams, playerId]
+  );
+
+  const seasonRows = all(
+    `SELECT
+       w.season_id, s.name AS season_name, s.sort_order,
+       SUM(e.appearances) AS appearances,
+       SUM(e.singles_won) AS singles_won,
+       SUM(e.doubles_won) AS doubles_won,
+       (SUM(e.singles_won) * ? + SUM(e.doubles_won) * ?) AS total_points,
+       SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.singles_lost + e.doubles_won + e.doubles_lost ELSE 0 END) AS frames_with_known_result,
+       SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.doubles_won ELSE 0 END) AS frames_won_known
+     FROM match_entries e
+     JOIN match_weeks w ON w.id = e.week_id
+     JOIN seasons s ON s.id = w.season_id
+     WHERE e.player_id = ?
+     GROUP BY w.season_id, s.name, s.sort_order
+     ORDER BY s.sort_order`,
+    [...pointsParams, playerId]
+  );
+
+  // Excludes aggregate (season-total import) rows - those aren't a real single match to list,
+  // they're already folded into the season row above.
+  const matchRows = all(
+    `SELECT
+       w.season_id, s.name AS season_name, s.sort_order,
+       w.week_number, w.match_date, w.opponent, w.venue, w.score_for, w.score_against, w.is_bye,
+       e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost
+     FROM match_entries e
+     JOIN match_weeks w ON w.id = e.week_id
+     JOIN seasons s ON s.id = w.season_id
+     WHERE e.player_id = ? AND w.is_aggregate = 0
+     ORDER BY s.sort_order DESC, w.week_number DESC`,
+    [playerId]
+  );
+
+  res.json({
+    player,
+    career: shapePlayerStats(careerRow || {}),
+    seasons: seasonRows.map((r) => ({ season_id: r.season_id, season_name: r.season_name, ...shapePlayerStats(r) })),
+    matches: matchRows.map((r) => ({
+      season_id: r.season_id,
+      season_name: r.season_name,
+      week_number: r.week_number,
+      match_date: r.match_date,
+      opponent: r.opponent,
+      venue: r.venue,
+      score_for: r.score_for,
+      score_against: r.score_against,
+      is_bye: !!r.is_bye,
+      singles_won: r.singles_won,
+      singles_lost: r.singles_lost,
+      doubles_won: r.doubles_won,
+      doubles_lost: r.doubles_lost,
+    })),
+  });
+});
+
 // ---------- Seasons ----------
 app.get('/api/seasons', (req, res) => {
   res.json(all('SELECT * FROM seasons ORDER BY sort_order, id'));

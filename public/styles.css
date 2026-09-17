@@ -655,6 +655,22 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
 td.actions { white-space: nowrap; }
 td.actions button { padding: 4px 9px; font-size: 0.8rem; margin-right: 4px; }
 
+/* ---------- Player profile ---------- */
+.player-link { color: var(--text); text-decoration: none; font-weight: 600; }
+.player-link:hover { color: var(--crimson-light); text-decoration: underline; }
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.player-header h1 { margin: 0; font-size: 1.5rem; font-weight: 800; }
+
+.player-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
 ::selection { background: var(--crimson); color: #fff; }
 
 input:focus, select:focus, button:focus-visible {

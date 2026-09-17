@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FrameIQ — Player Profile</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-left">
+        <div class="brand">
+          <img src="logo-mark.png" alt="" class="brand-logo" />
+          <div class="brand-text">
+            <div class="brand-name">FRAME<span class="brand-name-accent">IQ</span></div>
+            <div class="brand-tagline">// Pool Performance Intelligence</div>
+            <div class="brand-team">Sample Team</div>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a href="/" class="topbar-link">← Back to results</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="tab-panel active">
+      <div class="player-header">
+        <h1 id="playerName">—</h1>
+        <div class="player-badges" id="playerBadges"></div>
+      </div>
+
+      <h2 class="kpi-row-title">Career Totals</h2>
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Points</div>
+          <div class="kpi-value" id="kpiTotalPoints">—</div>
+          <div class="kpi-sub" id="kpiTotalPointsSub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Appearances</div>
+          <div class="kpi-value" id="kpiAppearances">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Points/Game</div>
+          <div class="kpi-value" id="kpiPointsPerGame">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Frame Win %</div>
+          <div class="kpi-value" id="kpiFrameWinPct">—</div>
+        </div>
+      </div>
+
+      <div class="panel-header">
+        <h2>By Season</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="seasonTable">
+          <thead>
+            <tr>
+              <th>Season</th>
+              <th>Appearances</th>
+              <th>Singles Won</th>
+              <th>Doubles Won</th>
+              <th>Total Points</th>
+              <th>Points/Game</th>
+              <th>Frame Win %</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="panel-header" style="margin-top: 28px;">
+        <h2>Match History</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="matchHistoryTable">
+          <thead>
+            <tr>
+              <th>Season</th>
+              <th>Week</th>
+              <th>Date</th>
+              <th>Venue</th>
+              <th>Opponent</th>
+              <th>Score</th>
+              <th>Result</th>
+              <th>Singles</th>
+              <th>Doubles</th>
+              <th>Form</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="noMatches" class="hint" hidden>No match history recorded yet.</p>
+    </section>
+  </main>
+
+  <script src="player.js"></script>
+</body>
+</html>
