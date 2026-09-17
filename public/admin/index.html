@@ -30,6 +30,7 @@
         <button class="tab-btn" data-tab="roster">Roster</button>
         <button class="tab-btn" data-tab="players">Players</button>
         <button class="tab-btn" data-tab="seasons">Seasons</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
       </nav>
     </aside>
 
@@ -77,7 +78,7 @@
         <div class="kpi-card">
           <div class="kpi-label">League Points</div>
           <div class="kpi-value" id="kpiLeaguePoints">—</div>
-          <div class="kpi-sub">1 per frame won, +1 bonus for winning the match</div>
+          <div class="kpi-sub" id="kpiLeaguePointsSub">1 per frame won, +1 bonus for winning the match</div>
         </div>
       </div>
 
@@ -107,7 +108,7 @@
           <tbody></tbody>
         </table>
         </div>
-        <p class="hint">3 points per singles won, 1 point per doubles won. Frame Win % excludes any imported rows where losses weren't recorded.</p>
+        <p class="hint" id="pointsFormulaHint">3 points per singles won, 1 point per doubles won. Frame Win % excludes any imported rows where losses weren't recorded.</p>
         <p class="hint">Form shows each player's last 5 weeks played, most recent on the right. <span class="form-chip form-w" style="width:18px;height:18px;font-size:0.62rem;">W</span> = won more frames than lost that week, <span class="form-chip form-l" style="width:18px;height:18px;font-size:0.62rem;">L</span> = lost more than won. <span class="form-chip form-split" style="width:18px;height:18px;font-size:0.62rem;">S</span> (Split) = played both singles and doubles and won one, lost the other — a single frame can never be a draw, but a week with two frames can end up even.</p>
       </div>
 
@@ -267,6 +268,21 @@
         <button id="importBtn">Import backup</button>
         <span class="hint" style="margin: 0;">Only works into an empty database (e.g. a freshly deployed instance) — won't overwrite existing data.</span>
       </div>
+    </section>
+
+    <section id="tab-settings" class="tab-panel">
+      <div class="panel-header">
+        <h2>Scoring Settings</h2>
+      </div>
+      <form id="settingsForm" class="settings-form">
+        <label>Points per singles win <input type="number" id="setSinglesWin" min="0" step="0.5" required /></label>
+        <label>Points per doubles win <input type="number" id="setDoublesWin" min="0" step="0.5" required /></label>
+        <label>Team points per frame won <input type="number" id="setFrameWon" min="0" step="0.5" required /></label>
+        <label>Team bonus for winning the match <input type="number" id="setWinBonus" min="0" step="0.5" required /></label>
+        <button type="submit">Save Settings</button>
+      </form>
+      <p class="hint">These control every player's Total Points and the team's League Points, everywhere in the app — past weeks are recalculated too, not just new ones.</p>
+      <p class="hint">BYE weeks keep working the same regardless of these settings: they still earn "points per frame won" for the score recorded on that week, but never the match-win bonus.</p>
     </section>
       </main>
     </div>

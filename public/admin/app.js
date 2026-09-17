@@ -129,6 +129,7 @@ function refreshCurrentTab() {
   if (tab === 'roster') loadRoster();
   if (tab === 'players') loadPlayers();
   if (tab === 'seasons') loadSeasons();
+  if (tab === 'settings') loadSettings();
 }
 
 // ---------- Season picker ----------
@@ -171,6 +172,10 @@ async function loadKpis() {
   renderKpis(data);
 }
 
+function pointsWord(n) {
+  return n === 1 ? 'point' : 'points';
+}
+
 function renderKpis(data) {
   const wr = data.win_rate;
   $('#kpiWinRate').textContent = wr.decided_total > 0 ? `${Math.round(wr.pct * 100)}%` : '—';
@@ -178,6 +183,16 @@ function renderKpis(data) {
   $('#kpiWinRateSub').textContent = wr.decided_total > 0 ? `${wr.wins}W ${wr.losses}L${wr.draws ? ' ' + wr.draws + 'D' : ''}${byeNote}` : (wr.byes ? `${wr.byes} BYE` : '');
   $('#kpiMatchesPlayed').textContent = data.matches_played || '0';
   $('#kpiLeaguePoints').textContent = data.league_points || '0';
+
+  if (data.settings) {
+    const s = data.settings;
+    $('#kpiLeaguePointsSub').textContent =
+      `${s.points_per_frame_won} per frame won, +${s.match_win_bonus} bonus for winning the match`;
+    $('#pointsFormulaHint').textContent =
+      `${s.points_per_singles_win} ${pointsWord(s.points_per_singles_win)} per singles won, ` +
+      `${s.points_per_doubles_win} ${pointsWord(s.points_per_doubles_win)} per doubles won. ` +
+      `Frame Win % excludes any imported rows where losses weren't recorded.`;
+  }
 
   if (data.points_leader) {
     $('#kpiPointsLeader').textContent = data.points_leader.name;
@@ -703,6 +718,31 @@ $('#addSeasonForm').addEventListener('submit', async (e) => {
   e.target.reset();
   await loadSeasonPicker();
   loadSeasons();
+});
+
+// ---------- Settings ----------
+async function loadSettings() {
+  const s = await api('/api/settings');
+  $('#setSinglesWin').value = s.points_per_singles_win;
+  $('#setDoublesWin').value = s.points_per_doubles_win;
+  $('#setFrameWon').value = s.points_per_frame_won;
+  $('#setWinBonus').value = s.match_win_bonus;
+}
+
+$('#settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await api('/api/settings', {
+    method: 'PUT',
+    body: JSON.stringify({
+      points_per_singles_win: Number($('#setSinglesWin').value),
+      points_per_doubles_win: Number($('#setDoublesWin').value),
+      points_per_frame_won: Number($('#setFrameWon').value),
+      match_win_bonus: Number($('#setWinBonus').value),
+    }),
+  });
+  await loadKpis();
+  if (activeTab() === 'stats' && state.statsView === 'performance') loadStats();
+  alert('Settings saved.');
 });
 
 // ---------- Init ----------

@@ -577,7 +577,7 @@ select.result-none { background: var(--surface-2); color: var(--muted); font-wei
 select.result-won { background: var(--green-soft); color: #5fd68e; border-color: #245c3c; }
 select.result-lost { background: var(--red-soft); color: #f0838c; border-color: #6b2a30; }
 
-.week-details-form {
+.week-details-form, .settings-form {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
@@ -589,7 +589,7 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
   margin: 0 0 16px;
 }
 
-.week-details-form label {
+.week-details-form label, .settings-form label {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -597,7 +597,7 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
   color: var(--muted);
 }
 
-.week-details-form input, .week-details-form select {
+.week-details-form input, .week-details-form select, .settings-form input {
   padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -608,6 +608,8 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
 
 .week-details-form input[type=number] { width: 80px; }
 .week-details-form input[type=text] { width: 160px; }
+.settings-form input[type=number] { width: 90px; }
+.settings-form button { align-self: flex-end; }
 
 .week-entry-panel input[type=number] {
   width: 56px;

@@ -70,7 +70,19 @@ CREATE TABLE IF NOT EXISTS match_entries (
   appearances INTEGER NOT NULL DEFAULT 1,
   UNIQUE(week_id, player_id)
 );
+
+-- Single-row table (id is always 1) holding the league's scoring formula, so it can be
+-- changed from the admin UI instead of being hardcoded, should the league ever change it.
+CREATE TABLE IF NOT EXISTS league_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  points_per_singles_win REAL NOT NULL DEFAULT 3,
+  points_per_doubles_win REAL NOT NULL DEFAULT 1,
+  points_per_frame_won REAL NOT NULL DEFAULT 1,
+  match_win_bonus REAL NOT NULL DEFAULT 1
+);
 `);
+
+db.exec('INSERT OR IGNORE INTO league_settings (id) VALUES (1)');
 
 // Migrate older databases created before venue/score/is_bye columns existed.
 const matchWeekColumns = db.prepare("PRAGMA table_info(match_weeks)").all().map((c) => c.name);

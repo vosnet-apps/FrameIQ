@@ -49,7 +49,7 @@ Open http://localhost:4173 in your browser. Leave the terminal window open while
 ## Public site vs admin
 
 - **`/`** — public, no login required. Shows Performance and Match Results for whichever season is selected. This is what you'd share with players.
-- **`/admin`** — everything else (Match Entry, Roster, Players, Seasons management), gated behind the password in `.env`. Log in at `/admin/login`.
+- **`/admin`** — everything else (Match Entry, Roster, Players, Seasons management, Settings), gated behind the password in `.env`. Log in at `/admin/login`.
 
 If you put this online, make sure `.env` is never committed or exposed — `.gitignore` already excludes it. Sessions are stored in server memory, so restarting the server logs everyone out (fine for a small team tool; if you outgrow that, swap in a persistent session store).
 
@@ -60,7 +60,7 @@ If you put this online, make sure `.env` is never committed or exposed — `.git
 - **Match Weeks** belong to a season. Each week has **entries** per player: singles/doubles won and lost, plus optional match details (opponent, date, home/away, score for/against, and a BYE flag for a scheduled bye week) — these are just for your own record-keeping and never factor into the Stats page.
 - **Stats** (Appearances, Points, Win %, League Points, recent Form) are calculated live from match entries — nothing is stored twice, so they're always in sync with the data you enter.
 
-Points = (singles won × 3) + (doubles won × 1). League Points = 1 per frame won, +1 bonus for winning the match (not awarded for a BYE week) — adjust the formulas in `src/server.js` if your league scores differently.
+Points = (singles won × points-per-singles-win) + (doubles won × points-per-doubles-win). League Points = (frames won × points-per-frame-won) + a bonus for winning the match — a BYE week still earns frame points for its recorded score, but never the win bonus. All four rates default to 3 / 1 / 1 / 1 and can be changed from **Settings** in the admin area if your league scores differently, with no code change needed.
 
 ## Demo data
 

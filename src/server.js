@@ -60,6 +60,8 @@ const all = (sql, params = []) => db.prepare(sql).all(...params);
 const get = (sql, params = []) => db.prepare(sql).get(...params);
 const run = (sql, params = []) => db.prepare(sql).run(...params);
 
+const getSettings = () => get('SELECT * FROM league_settings WHERE id = 1');
+
 // ---------- Players ----------
 app.get('/api/players', requireAdmin, (req, res) => {
   res.json(all('SELECT * FROM players ORDER BY (left_date IS NOT NULL), name'));
@@ -281,6 +283,36 @@ app.delete('/api/weeks/:id/entries/:playerId', requireAdmin, (req, res) => {
   res.status(204).end();
 });
 
+// ---------- League settings ----------
+// Controls the scoring formula used everywhere below: how many points a singles/doubles
+// win is worth to a player, and how team League Points are calculated (points per frame
+// won, plus a bonus for winning the match). Kept editable so it can be corrected here
+// without a code change if the league ever changes how it awards points.
+app.get('/api/settings', (req, res) => {
+  res.json(getSettings());
+});
+
+app.put('/api/settings', requireAdmin, (req, res) => {
+  const existing = getSettings();
+  const { points_per_singles_win, points_per_doubles_win, points_per_frame_won, match_win_bonus } = req.body;
+  const clean = (value, fallback) => {
+    const n = Number(value);
+    return value === undefined || value === null || value === '' || Number.isNaN(n) || n < 0 ? fallback : n;
+  };
+  run(
+    `UPDATE league_settings
+     SET points_per_singles_win = ?, points_per_doubles_win = ?, points_per_frame_won = ?, match_win_bonus = ?
+     WHERE id = 1`,
+    [
+      clean(points_per_singles_win, existing.points_per_singles_win),
+      clean(points_per_doubles_win, existing.points_per_doubles_win),
+      clean(points_per_frame_won, existing.points_per_frame_won),
+      clean(match_win_bonus, existing.match_win_bonus),
+    ]
+  );
+  res.json(getSettings());
+});
+
 // ---------- Stats ----------
 const STATS_SQL = `
   SELECT
@@ -289,7 +321,7 @@ const STATS_SQL = `
     SUM(e.appearances) AS appearances,
     SUM(e.singles_won) AS singles_won,
     SUM(e.doubles_won) AS doubles_won,
-    (SUM(e.singles_won) * 3 + SUM(e.doubles_won) * 1) AS total_points,
+    (SUM(e.singles_won) * ? + SUM(e.doubles_won) * ?) AS total_points,
     SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.singles_lost + e.doubles_won + e.doubles_lost ELSE 0 END) AS frames_with_known_result,
     SUM(CASE WHEN e.singles_lost IS NOT NULL THEN e.singles_won + e.doubles_won ELSE 0 END) AS frames_won_known
   FROM match_entries e
@@ -302,7 +334,8 @@ const STATS_SQL = `
 
 app.get('/api/stats', (req, res) => {
   const seasonId = req.query.season_id ? Number(req.query.season_id) : null;
-  const rows = all(STATS_SQL, [seasonId, seasonId]);
+  const settings = getSettings();
+  const rows = all(STATS_SQL, [settings.points_per_singles_win, settings.points_per_doubles_win, seasonId, seasonId]);
   const shaped = rows.map((r) => ({
     player_id: r.player_id,
     name: r.name,
@@ -320,8 +353,11 @@ app.get('/api/stats', (req, res) => {
 // ---------- Stats: KPI summary ----------
 app.get('/api/stats/summary', (req, res) => {
   const seasonId = req.query.season_id ? Number(req.query.season_id) : null;
+  const settings = getSettings();
 
   // "Decided" matches exclude BYEs (a fixed league bye - counts as played, but never a win/loss).
+  // League Points = frames won (score_for) times the per-frame rate, plus the match-win bonus
+  // for a decided win only - a BYE's score_for still earns frame points, just never the bonus.
   const matchRow = get(
     `SELECT
        SUM(CASE WHEN is_bye = 0 AND score_for > score_against THEN 1 ELSE 0 END) AS wins,
@@ -330,14 +366,14 @@ app.get('/api/stats/summary', (req, res) => {
        SUM(CASE WHEN is_bye = 0 THEN 1 ELSE 0 END) AS decided_total,
        SUM(CASE WHEN is_bye = 1 THEN 1 ELSE 0 END) AS byes,
        COUNT(*) AS matches_played,
-       SUM(score_for + CASE WHEN is_bye = 0 AND score_for > score_against THEN 1 ELSE 0 END) AS league_points
+       SUM(score_for * ? + CASE WHEN is_bye = 0 AND score_for > score_against THEN ? ELSE 0 END) AS league_points
      FROM match_weeks
      WHERE is_aggregate = 0 AND score_for IS NOT NULL AND score_against IS NOT NULL
        AND (? IS NULL OR season_id = ?)`,
-    [seasonId, seasonId]
+    [settings.points_per_frame_won, settings.match_win_bonus, seasonId, seasonId]
   );
 
-  const statsRows = all(STATS_SQL, [seasonId, seasonId]).map((r) => ({
+  const statsRows = all(STATS_SQL, [settings.points_per_singles_win, settings.points_per_doubles_win, seasonId, seasonId]).map((r) => ({
     player_id: r.player_id,
     name: r.name,
     appearances: r.appearances,
@@ -363,6 +399,7 @@ app.get('/api/stats/summary', (req, res) => {
     league_points: matchRow.league_points || 0,
     points_leader: pointsLeader ? { name: pointsLeader.name, total_points: pointsLeader.total_points } : null,
     best_frame_win_pct: bestFrameWinPct ? { name: bestFrameWinPct.name, frame_win_pct: bestFrameWinPct.frame_win_pct } : null,
+    settings,
   });
 });
 
