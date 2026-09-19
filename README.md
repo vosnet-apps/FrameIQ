@@ -76,4 +76,4 @@ This app is ready to deploy as-is (it's just a small Node/Express server), but a
 
 ## Licence
 
-Released under the [MIT License](LICENSE).
+Copyright (c) 2026 vosnet-apps. Released under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). You are free to use, modify and self-host FrameIQ. If you run a modified version as a service for others, you must make your modified source available to its users.
