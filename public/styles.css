@@ -308,7 +308,7 @@ html:not(.brand-ready) .brand-logo { visibility: hidden; }
   font-family: inherit;
 }
 
-.view-toggle-btn:hover { color: var(--text); }
+.view-toggle-btn:hover { color: #fff; }
 .view-toggle-btn.active { background: var(--crimson); color: #fff; font-weight: 600; }
 
 /* ---------- KPI cards ---------- */
