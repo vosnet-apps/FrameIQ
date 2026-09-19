@@ -28,7 +28,7 @@ FrameIQ handles data typed in by strangers. **Treat everything a user enters, or
 - **Dependencies:** don't add a new dependency without discussing it in an issue first. Every dependency is extra attack surface.
 - **Secrets:** never commit `.env`, passwords, keys or real player data.
 
-**Found a vulnerability?** Don't open a public issue. Contact the maintainer privately (see `SECURITY.md` once published, or use GitHub's private vulnerability reporting on the repo).
+**Found a vulnerability?** Don't open a public issue. Contact the maintainer privately (see [SECURITY.md](SECURITY.md), which uses GitHub's private vulnerability reporting).
 
 ## Making a pull request
 
