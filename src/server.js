@@ -61,7 +61,14 @@ const get = (sql, params = []) => db.prepare(sql).get(...params);
 const run = (sql, params = []) => db.prepare(sql).run(...params);
 
 const getSettings = () => get('SELECT * FROM league_settings WHERE id = 1');
-const getAppSettings = () => get('SELECT * FROM app_settings WHERE id = 1');
+// Never returns the logo bytes themselves - those are served by GET /api/logo.
+const getAppSettings = () => {
+  const r = get(
+    'SELECT accent_color, team_name, logo_updated_at, (logo_data IS NOT NULL) AS has_logo FROM app_settings WHERE id = 1'
+  );
+  return { accent_color: r.accent_color, team_name: r.team_name, has_logo: !!r.has_logo, logo_version: r.logo_updated_at || 0 };
+};
+const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 // ---------- Players ----------
@@ -413,9 +420,38 @@ app.get('/api/app-settings', (req, res) => {
 
 app.put('/api/app-settings', requireAdmin, (req, res) => {
   const existing = getAppSettings();
-  const { accent_color } = req.body;
-  const clean = HEX_COLOR_RE.test(accent_color || '') ? accent_color : existing.accent_color;
-  run('UPDATE app_settings SET accent_color = ? WHERE id = 1', [clean]);
+  const { accent_color, team_name } = req.body;
+  const cleanColor = HEX_COLOR_RE.test(accent_color || '') ? accent_color : existing.accent_color;
+  const name = typeof team_name === 'string' ? team_name.trim() : '';
+  const cleanName = name && name.length <= 60 ? name : existing.team_name;
+  run('UPDATE app_settings SET accent_color = ?, team_name = ? WHERE id = 1', [cleanColor, cleanName]);
+  res.json(getAppSettings());
+});
+
+// Custom logo, stored in the database (so it lives on the same persistent volume as
+// everything else). Raster formats only - SVG can carry scripts.
+app.get('/api/logo', (req, res) => {
+  const row = get('SELECT logo_data, logo_mime FROM app_settings WHERE id = 1');
+  if (!row || !row.logo_data) return res.status(404).end();
+  res.set({
+    'Content-Type': row.logo_mime,
+    'Cache-Control': 'public, max-age=31536000, immutable', // callers add ?v=<logo_version>
+    'X-Content-Type-Options': 'nosniff',
+  });
+  res.send(Buffer.from(row.logo_data));
+});
+
+app.put('/api/logo', requireAdmin, express.raw({ type: LOGO_TYPES, limit: '1mb' }), (req, res) => {
+  if (!Buffer.isBuffer(req.body) || !req.body.length) {
+    return res.status(400).json({ error: 'Upload a PNG, JPEG, WebP or GIF image under 1 MB.' });
+  }
+  const mime = req.get('content-type').split(';')[0].trim();
+  run('UPDATE app_settings SET logo_data = ?, logo_mime = ?, logo_updated_at = ? WHERE id = 1', [req.body, mime, Date.now()]);
+  res.json(getAppSettings());
+});
+
+app.delete('/api/logo', requireAdmin, (req, res) => {
+  run('UPDATE app_settings SET logo_data = NULL, logo_mime = NULL, logo_updated_at = ? WHERE id = 1', [Date.now()]);
   res.json(getAppSettings());
 });
 

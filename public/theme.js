@@ -1,7 +1,9 @@
-// Applies the admin-configured accent color on every page. Runs before app.js so the
-// theme is in place before content renders. Falls back silently to the CSS defaults in
-// styles.css if the request fails - never blocks the page on this.
+// Applies admin-configured branding (accent color, team name, logo) on every page.
+// The brand name/logo stay hidden until settings arrive so a renamed team never flashes
+// the default name; if the request fails they're revealed with the built-in defaults.
 (function () {
+  const initialTitle = document.title;
+
   function shade(hex, percent) {
     const num = parseInt(hex.slice(1), 16);
     const amt = Math.round(2.55 * percent);
@@ -19,10 +21,33 @@
   }
   window.applyAccent = applyAccent;
 
+  function whenReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  function applyIdentity(settings) {
+    document.querySelectorAll('.brand-team').forEach((el) => (el.textContent = settings.team_name));
+    document.querySelectorAll('.brand-logo').forEach((el) => {
+      if (!el.dataset.defaultSrc) el.dataset.defaultSrc = el.getAttribute('src');
+      el.src = settings.has_logo ? `/api/logo?v=${settings.logo_version}` : el.dataset.defaultSrc;
+    });
+    // Static titles read "<page> — <team>"; pages that set their own title later
+    // (e.g. a player's name) are left alone.
+    if (document.title === initialTitle && initialTitle.includes(' — ')) {
+      document.title = initialTitle.split(' — ')[0] + ' — ' + settings.team_name;
+    }
+  }
+  window.applyIdentity = applyIdentity;
+
   fetch('/api/app-settings')
     .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null)
     .then((settings) => {
       if (settings && settings.accent_color) applyAccent(settings.accent_color);
-    })
-    .catch(() => {});
+      whenReady(() => {
+        if (settings) applyIdentity(settings);
+        document.documentElement.classList.add('brand-ready');
+      });
+    });
 })();

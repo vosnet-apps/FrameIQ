@@ -26,10 +26,9 @@ Admin access sits behind a password screen:
 
 ## Making it your team's
 
-1. Replace `public/logo-mark.png` with your own club/team logo (any image works; the app doesn't require a specific shape).
-2. Swap the team name — search for **"Sample Team"** across `public/index.html` and `public/admin/index.html` (the `.brand-team` divs and page `<title>` tags) and replace it with your own team's name.
-3. Optionally replace `public/favicon-32.png`, `favicon-192.png`, `favicon-512.png`, and `apple-touch-icon.png` with your own icon.
-4. Once you're ready to start tracking your own season, delete `data/pool.db` (if it exists) and either run `npm run seed` again after editing `import/seed_data.json` with your own players/results, or just add everything through the admin UI from scratch (Players → Seasons → Roster → Match Entry).
+1. Log in to `/admin` and open **Settings → Branding** to set your team name, upload your logo (PNG, JPEG, WebP or GIF, up to 1 MB — any shape works) and pick an accent color. Click **Save Settings**; it applies everywhere immediately, no code edits or restart needed.
+2. Optionally replace `public/favicon-32.png`, `favicon-192.png`, `favicon-512.png`, and `apple-touch-icon.png` with your own icon (browser-tab icons aren't part of Settings yet).
+3. Once you're ready to start tracking your own season, delete `data/pool.db` (if it exists) and either run `npm run seed` again after editing `import/seed_data.json` with your own players/results, or just add everything through the admin UI from scratch (Players → Seasons → Roster → Match Entry).
 
 ## Running it
 

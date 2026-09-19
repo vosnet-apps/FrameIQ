@@ -87,7 +87,11 @@ CREATE TABLE IF NOT EXISTS league_settings (
 -- a different color.
 CREATE TABLE IF NOT EXISTS app_settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
-  accent_color TEXT NOT NULL DEFAULT '#b3182b'
+  accent_color TEXT NOT NULL DEFAULT '#b3182b',
+  team_name TEXT NOT NULL DEFAULT 'Sample Team',
+  logo_data BLOB,
+  logo_mime TEXT,
+  logo_updated_at INTEGER
 );
 `);
 
@@ -99,6 +103,19 @@ const matchWeekColumns = db.prepare("PRAGMA table_info(match_weeks)").all().map(
 for (const [col, type] of [['venue', 'TEXT'], ['score_for', 'INTEGER'], ['score_against', 'INTEGER'], ['is_bye', 'INTEGER NOT NULL DEFAULT 0']]) {
   if (!matchWeekColumns.includes(col)) {
     db.exec(`ALTER TABLE match_weeks ADD COLUMN ${col} ${type}`);
+  }
+}
+
+// Migrate older databases created before team name / logo branding existed.
+const appSettingsColumns = db.prepare("PRAGMA table_info(app_settings)").all().map((c) => c.name);
+for (const [col, ddl] of [
+  ['team_name', "TEXT NOT NULL DEFAULT 'Sample Team'"],
+  ['logo_data', 'BLOB'],
+  ['logo_mime', 'TEXT'],
+  ['logo_updated_at', 'INTEGER'],
+]) {
+  if (!appSettingsColumns.includes(col)) {
+    db.exec(`ALTER TABLE app_settings ADD COLUMN ${col} ${ddl}`);
   }
 }
 

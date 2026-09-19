@@ -765,27 +765,91 @@ async function loadSettings() {
   $('#setWinBonus').value = s.match_win_bonus;
   $('#setAllowDraws').checked = !!s.allow_draws;
   $('#setAccentColor').value = a.accent_color;
+  $('#setTeamName').value = a.team_name;
+  resetLogoControls(a);
+}
+
+// Logo changes are staged until "Save Settings", like every other field on this page.
+const logoState = { file: null, remove: false, hasLogo: false, defaultSrc: $('#logoPreview').getAttribute('src') };
+
+function resetLogoControls(a) {
+  logoState.file = null;
+  logoState.remove = false;
+  logoState.hasLogo = a.has_logo;
+  $('#setLogoFile').value = '';
+  $('#logoPreview').src = a.has_logo ? `/api/logo?v=${a.logo_version}` : logoState.defaultSrc;
+  $('#removeLogoBtn').hidden = !a.has_logo;
+}
+
+$('#setLogoFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) || file.size > 1024 * 1024) {
+    e.target.value = '';
+    return alert('Choose a PNG, JPEG, WebP or GIF image under 1 MB.');
+  }
+  logoState.file = file;
+  logoState.remove = false;
+  $('#logoPreview').src = URL.createObjectURL(file);
+  $('#removeLogoBtn').hidden = false;
+});
+
+$('#removeLogoBtn').addEventListener('click', () => {
+  logoState.file = null;
+  logoState.remove = logoState.hasLogo;
+  $('#setLogoFile').value = '';
+  $('#logoPreview').src = logoState.defaultSrc;
+  $('#removeLogoBtn').hidden = true;
+});
+
+async function saveLogoChange() {
+  let res = null;
+  if (logoState.file) {
+    res = await fetch('/api/logo', { method: 'PUT', headers: { 'Content-Type': logoState.file.type }, body: logoState.file });
+  } else if (logoState.remove) {
+    res = await fetch('/api/logo', { method: 'DELETE' });
+  }
+  if (!res) return null;
+  if (res.status === 401) {
+    window.location.href = '/admin/login';
+    throw new Error('Not authenticated');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Logo upload failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 $('#settingsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const [, updatedApp] = await Promise.all([
-    api('/api/settings', {
-      method: 'PUT',
-      body: JSON.stringify({
-        points_per_singles_win: Number($('#setSinglesWin').value),
-        points_per_doubles_win: Number($('#setDoublesWin').value),
-        points_per_frame_won: Number($('#setFrameWon').value),
-        match_win_bonus: Number($('#setWinBonus').value),
-        allow_draws: $('#setAllowDraws').checked,
+  let updatedApp;
+  try {
+    [, updatedApp] = await Promise.all([
+      api('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          points_per_singles_win: Number($('#setSinglesWin').value),
+          points_per_doubles_win: Number($('#setDoublesWin').value),
+          points_per_frame_won: Number($('#setFrameWon').value),
+          match_win_bonus: Number($('#setWinBonus').value),
+          allow_draws: $('#setAllowDraws').checked,
+        }),
       }),
-    }),
-    api('/api/app-settings', {
-      method: 'PUT',
-      body: JSON.stringify({ accent_color: $('#setAccentColor').value }),
-    }),
-  ]);
+      api('/api/app-settings', {
+        method: 'PUT',
+        body: JSON.stringify({ accent_color: $('#setAccentColor').value, team_name: $('#setTeamName').value }),
+      }),
+    ]);
+    // Runs after the text settings so a failed upload doesn't lose them; its response
+    // (if any) is the freshest view of the branding.
+    updatedApp = (await saveLogoChange()) || updatedApp;
+  } catch (err) {
+    return alert(err.message);
+  }
   applyAccent(updatedApp.accent_color);
+  applyIdentity(updatedApp);
+  resetLogoControls(updatedApp);
   await loadKpis();
   if (activeTab() === 'stats') {
     if (state.statsView === 'performance') loadStats();

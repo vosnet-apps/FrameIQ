@@ -70,6 +70,15 @@ body {
 
 .brand-name-accent { color: var(--crimson-light); }
 
+/* theme.js reveals these once branding settings have loaded (see there). */
+html:not(.brand-ready) .brand-team,
+html:not(.brand-ready) .brand-logo { visibility: hidden; }
+
+.logo-setting { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.logo-setting img { height: 45px; width: auto; }
+.logo-setting input[type=file] { font-size: 0.85rem; color: var(--muted); border: none; background: transparent; padding: 0; }
+.settings-form input[type=text] { width: 220px; }
+
 .brand-tagline {
   font-size: 0.68rem;
   color: var(--muted);

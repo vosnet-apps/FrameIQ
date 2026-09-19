@@ -299,9 +299,15 @@
           <h2>Branding</h2>
         </div>
         <div class="settings-form">
+          <label>Team name <input type="text" id="setTeamName" maxlength="60" required /></label>
           <label>Accent color <input type="color" id="setAccentColor" required /></label>
+          <div class="logo-setting">
+            <img id="logoPreview" src="../logo-mark.png" alt="Current logo" />
+            <label>Logo <input type="file" id="setLogoFile" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
+            <button type="button" class="secondary" id="removeLogoBtn" hidden>Remove custom logo</button>
+          </div>
         </div>
-        <p class="hint">Changes the app's accent color everywhere — buttons, active tabs, links — for every visitor.</p>
+        <p class="hint">Team name, logo and accent color show everywhere — page headers, the browser tab, buttons and active tabs — for every visitor. Logos: PNG, JPEG, WebP or GIF, up to 1 MB.</p>
 
         <div class="panel-header" style="margin-top: 28px;">
           <h2>Scoring Settings</h2>
