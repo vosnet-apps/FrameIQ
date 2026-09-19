@@ -19,7 +19,36 @@
   --radius-lg: 16px;
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
   color-scheme: dark; /* native scrollbars, checkboxes and pickers draw dark */
+  --green-text: #5fd68e;
+  --green-border: #245c3c;
+  --red-text: #f0838c;
+  --red-border: #6b2a30;
+  --amber-text: #e0ab53;
+  --amber-soft: #3a2d12;
+  --amber-border: #5c4820;
   font-family: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Light theme: chosen per viewer with the topbar toggle (theme.js sets data-theme). */
+:root[data-theme="light"] {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f6;
+  --surface-3: #e3e8f0;
+  --border: #d5dbe6;
+  --text: #1b2230;
+  --muted: #5f6b7d;
+  --green-soft: #dff5e8;
+  --green-text: #14783f;
+  --green-border: #a9dcbf;
+  --red-soft: #fde3e6;
+  --red-text: #b3243a;
+  --red-border: #f0b1ba;
+  --amber-soft: #fdf0d5;
+  --amber-text: #8a5a05;
+  --amber-border: #ecd08e;
+  --shadow-card: 0 6px 18px rgba(20, 30, 50, 0.08);
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -353,8 +382,8 @@ html:not(.brand-ready) .brand-logo { visibility: hidden; }
   color: var(--muted);
 }
 
-.form-chip.form-w { background: var(--green-soft); color: #5fd68e; }
-.form-chip.form-l { background: var(--red-soft); color: #f0838c; }
+.form-chip.form-w { background: var(--green-soft); color: var(--green-text); }
+.form-chip.form-l { background: var(--red-soft); color: var(--red-text); }
 .form-chip.form-split { background: var(--surface-3); color: var(--muted); }
 
 .result-pill {
@@ -367,8 +396,8 @@ html:not(.brand-ready) .brand-logo { visibility: hidden; }
   color: var(--muted);
 }
 
-.result-pill.result-won { background: var(--green-soft); color: #5fd68e; }
-.result-pill.result-lost { background: var(--red-soft); color: #f0838c; }
+.result-pill.result-won { background: var(--green-soft); color: var(--green-text); }
+.result-pill.result-lost { background: var(--red-soft); color: var(--red-text); }
 .result-pill.result-bye { background: var(--surface-3); color: var(--muted); }
 
 /* ---------- Login ---------- */
@@ -584,8 +613,8 @@ select.singles-result, select.doubles-result {
 }
 
 select.result-none { background: var(--surface-2); color: var(--muted); font-weight: 400; }
-select.result-won { background: var(--green-soft); color: #5fd68e; border-color: #245c3c; }
-select.result-lost { background: var(--red-soft); color: #f0838c; border-color: #6b2a30; }
+select.result-won { background: var(--green-soft); color: var(--green-text); border-color: var(--green-border); }
+select.result-lost { background: var(--red-soft); color: var(--red-text); border-color: var(--red-border); }
 
 .week-details-form, .settings-form {
   display: flex;
@@ -633,6 +662,8 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+.settings-form .toggle-switch { flex-direction: row; font-size: 0.88rem; }
 
 .toggle-switch input {
   position: absolute;
@@ -694,11 +725,11 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
   border-radius: 10px;
   font-size: 0.78rem;
   background: var(--green-soft);
-  color: #5fd68e;
+  color: var(--green-text);
 }
 
-.pill.sub { background: #3a2d12; color: #e0ab53; }
-.pill.ex { background: var(--red-soft); color: #f0838c; }
+.pill.sub { background: var(--amber-soft); color: var(--amber-text); }
+.pill.ex { background: var(--red-soft); color: var(--red-text); }
 
 #playersBody input[type=text] {
   width: 100%;
@@ -751,17 +782,16 @@ select.pill-select option { background: var(--surface-2); color: var(--text); fo
 select.pill-select.tone-captain {
   background-color: color-mix(in srgb, var(--crimson) 26%, var(--surface-2));
   border-color: color-mix(in srgb, var(--crimson) 60%, var(--border));
-  color: #fff;
+  color: var(--text);
 }
-select.pill-select.tone-vicecaptain { background-color: #3a2d12; border-color: #5c4820; color: #e0ab53; }
-select.pill-select.tone-regular { background-color: var(--green-soft); border-color: #245c3c; color: #5fd68e; }
-select.pill-select.tone-sub { background-color: #3a2d12; border-color: #5c4820; color: #e0ab53; }
+select.pill-select.tone-vicecaptain { background-color: var(--amber-soft); border-color: var(--amber-border); color: var(--amber-text); }
+select.pill-select.tone-regular { background-color: var(--green-soft); border-color: var(--green-border); color: var(--green-text); }
+select.pill-select.tone-sub { background-color: var(--amber-soft); border-color: var(--amber-border); color: var(--amber-text); }
 
 /* ---------- Date pickers ---------- */
-/* color-scheme: dark makes the browser draw the calendar icon and the popup calendar
-   in dark colours instead of a white system widget. */
+/* The page-level color-scheme makes the browser draw the calendar icon and popup
+   calendar to match the current theme instead of as a white system widget. */
 input[type=date] {
-  color-scheme: dark;
   font: inherit;
   font-size: 0.86rem;
   padding: 6px 10px;
@@ -777,6 +807,24 @@ input[type=date]:hover { border-color: var(--crimson); }
 input[type=date]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.65; }
 input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 #playersBody input[type=date] { min-width: 140px; }
+
+/* ---------- Theme toggle ---------- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.theme-toggle:hover { background: var(--surface-2); color: var(--text); }
+.theme-toggle svg { width: 18px; height: 18px; }
 
 /* ---------- Footer / version ---------- */
 .site-footer {

@@ -6,7 +6,7 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 
 - [x] **Admin-configurable accent color** — a color picker in Settings, same pattern as the scoring-formula fields, so a team can make it "theirs" without touching CSS.
 - [x] **Team name + logo from the UI** — currently "making it your team's" means find-replacing `Sample Team` across two HTML files and manually swapping `logo-mark.png`. Move both into Settings (name field + logo upload) so onboarding needs zero file edits.
-- [ ] **Light/dark theme toggle** — the app is dark-only today. A per-viewer toggle stored in `localStorage` (no DB or API change needed).
+- [x] **Light/dark theme toggle** — the app is dark-only today. A per-viewer toggle stored in `localStorage` (no DB or API change needed).
 
 ## Stats & data
 
