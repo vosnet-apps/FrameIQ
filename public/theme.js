@@ -42,6 +42,13 @@
       if (!el.dataset.defaultSrc) el.dataset.defaultSrc = el.getAttribute('src');
       el.src = settings.has_logo ? `/api/logo?v=${settings.logo_version}` : el.dataset.defaultSrc;
     });
+    document.querySelectorAll('.site-footer').forEach((el) => (el.hidden = !settings.show_footer));
+    const updated = document.getElementById('footerUpdated');
+    if (updated) {
+      updated.hidden = !settings.last_result_date;
+      updated.textContent = settings.last_result_date ? `Results last updated ${settings.last_result_date}` : '';
+    }
+    if (settings.version) document.querySelectorAll('.app-version').forEach((el) => (el.textContent = `FrameIQ v${settings.version}`));
     // Static titles read "<page> — <team>"; pages that set their own title later
     // (e.g. a player's name) are left alone.
     if (document.title === initialTitle && initialTitle.includes(' — ')) {

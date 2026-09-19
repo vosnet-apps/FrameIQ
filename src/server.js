@@ -5,6 +5,7 @@ import { SqliteSessionStore } from './session-store.js';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { db } from './db.js';
 
 if (!process.env.ADMIN_PASSWORD) {
@@ -15,6 +16,7 @@ if (!process.env.ADMIN_PASSWORD) {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, '..', 'public');
 const adminDir = path.join(publicDir, 'admin');
+const APP_VERSION = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
 // Signing secret: SESSION_SECRET if the host sets one, otherwise generated once and kept
 // in the database so sessions stay valid across restarts.
@@ -164,9 +166,20 @@ const getSettings = () => get('SELECT * FROM league_settings WHERE id = 1');
 // Never returns the logo bytes themselves - those are served by GET /api/logo.
 const getAppSettings = () => {
   const r = get(
-    'SELECT accent_color, team_name, logo_updated_at, (logo_data IS NOT NULL) AS has_logo FROM app_settings WHERE id = 1'
+    'SELECT accent_color, team_name, show_footer, logo_updated_at, (logo_data IS NOT NULL) AS has_logo FROM app_settings WHERE id = 1'
   );
-  return { accent_color: r.accent_color, team_name: r.team_name, has_logo: !!r.has_logo, logo_version: r.logo_updated_at || 0 };
+  // Newest scored, non-BYE match date - the footer's "results last updated" line.
+  const last = get(
+    'SELECT MAX(match_date) AS d FROM match_weeks WHERE is_aggregate = 0 AND is_bye = 0 AND score_for IS NOT NULL AND match_date IS NOT NULL'
+  );
+  return {
+    accent_color: r.accent_color,
+    team_name: r.team_name,
+    has_logo: !!r.has_logo,
+    logo_version: r.logo_updated_at || 0,
+    show_footer: !!r.show_footer,
+    last_result_date: last ? last.d : null,
+  };
 };
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -515,16 +528,18 @@ app.put('/api/settings', requireAdmin, (req, res) => {
 
 // ---------- App settings (branding) ----------
 app.get('/api/app-settings', (req, res) => {
-  res.json(getAppSettings());
+  // The version is only shown in the admin area, so it isn't handed to anonymous visitors.
+  res.json(req.session && req.session.isAdmin ? { ...getAppSettings(), version: APP_VERSION } : getAppSettings());
 });
 
 app.put('/api/app-settings', requireAdmin, (req, res) => {
   const existing = getAppSettings();
-  const { accent_color, team_name } = req.body;
+  const { accent_color, team_name, show_footer } = req.body;
   const cleanColor = HEX_COLOR_RE.test(accent_color || '') ? accent_color : existing.accent_color;
   const name = typeof team_name === 'string' ? team_name.trim() : '';
   const cleanName = name && name.length <= 60 ? name : existing.team_name;
-  run('UPDATE app_settings SET accent_color = ?, team_name = ? WHERE id = 1', [cleanColor, cleanName]);
+  const cleanFooter = show_footer === undefined ? existing.show_footer : !!show_footer;
+  run('UPDATE app_settings SET accent_color = ?, team_name = ?, show_footer = ? WHERE id = 1', [cleanColor, cleanName, cleanFooter ? 1 : 0]);
   res.json(getAppSettings());
 });
 

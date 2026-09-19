@@ -722,6 +722,31 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
 td.actions { white-space: nowrap; }
 td.actions button { padding: 4px 9px; font-size: 0.8rem; margin-right: 4px; }
 
+/* ---------- Footer / version ---------- */
+.site-footer {
+  max-width: 1100px;
+  margin: 40px auto 24px;
+  padding: 16px 16px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.site-footer a { color: var(--muted); text-decoration: underline; }
+.site-footer a:hover { color: var(--text); }
+
+.sidebar-version {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
 /* ---------- Player profile ---------- */
 .player-link { color: var(--text); text-decoration: none; font-weight: 600; }
 .player-link:hover { color: var(--crimson-light); text-decoration: underline; }

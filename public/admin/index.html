@@ -33,6 +33,7 @@
         <button class="tab-btn" data-tab="seasons">Seasons</button>
         <button class="tab-btn" data-tab="settings">Settings</button>
       </nav>
+      <div class="sidebar-version app-version"></div>
     </aside>
 
     <div class="app-main">
@@ -330,8 +331,14 @@
             <span class="toggle-slider"></span>
             Show drawn games in head-to-head stats
           </label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setShowFooter" />
+            <span class="toggle-slider"></span>
+            Show "Powered by FrameIQ" footer on public pages
+          </label>
         </div>
         <p class="hint">Turn off drawn games if your league's match format can never actually end level — head-to-head will then treat every recorded match as won or lost.</p>
+        <p class="hint">The footer credits FrameIQ and Vosnet and shows when results were last updated. It is only ever shown on public pages, never in this admin area.</p>
 
         <div style="margin-top: 28px;">
           <button type="submit">Save Settings</button>

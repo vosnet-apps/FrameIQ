@@ -104,7 +104,8 @@ CREATE TABLE IF NOT EXISTS app_settings (
   team_name TEXT NOT NULL DEFAULT 'Sample Team',
   logo_data BLOB,
   logo_mime TEXT,
-  logo_updated_at INTEGER
+  logo_updated_at INTEGER,
+  show_footer INTEGER NOT NULL DEFAULT 1
 );
 `);
 
@@ -126,6 +127,7 @@ for (const [col, ddl] of [
   ['logo_data', 'BLOB'],
   ['logo_mime', 'TEXT'],
   ['logo_updated_at', 'INTEGER'],
+  ['show_footer', 'INTEGER NOT NULL DEFAULT 1'],
 ]) {
   if (!appSettingsColumns.includes(col)) {
     db.exec(`ALTER TABLE app_settings ADD COLUMN ${col} ${ddl}`);

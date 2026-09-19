@@ -760,6 +760,7 @@ async function loadSettings() {
   $('#setFrameWon').value = s.points_per_frame_won;
   $('#setWinBonus').value = s.match_win_bonus;
   $('#setAllowDraws').checked = !!s.allow_draws;
+  $('#setShowFooter').checked = !!a.show_footer;
   $('#setAccentColor').value = a.accent_color;
   $('#setTeamName').value = a.team_name;
   resetLogoControls(a);
@@ -834,7 +835,7 @@ $('#settingsForm').addEventListener('submit', async (e) => {
       }),
       api('/api/app-settings', {
         method: 'PUT',
-        body: JSON.stringify({ accent_color: $('#setAccentColor').value, team_name: $('#setTeamName').value }),
+        body: JSON.stringify({ accent_color: $('#setAccentColor').value, team_name: $('#setTeamName').value, show_footer: $('#setShowFooter').checked }),
       }),
     ]);
     // Runs after the text settings so a failed upload doesn't lose them; its response
