@@ -10,7 +10,7 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 
 ## Stats & data
 
-- [ ] **Head-to-head opponent records** — `match_weeks.opponent` is already free text; aggregate by it for a "record vs. Kingsway A: 3W 1L" view. Pairs naturally with player profiles.
+- [x] **Head-to-head opponent records** — `match_weeks.opponent` is already free text; aggregate by it for a "record vs. Kingsway A: 3W 1L" view. Pairs naturally with player profiles.
 - [ ] **Season awards / milestones** — Player of the Season, longest win streak, most improved, milestone frames (e.g. 100th win) — all derivable from existing `match_entries`, no schema change.
 - [ ] **Standings / full league table** — track other teams' results too, not just this team's, so the app can show a real league table instead of just one team's record.
 - [ ] **CSV export per season** — separate from the full JSON backup (which is for migrating hosts); this is for dropping a season into a spreadsheet or printing for a clubhouse noticeboard.
