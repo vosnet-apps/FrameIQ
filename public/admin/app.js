@@ -722,12 +722,23 @@ $('#addSeasonForm').addEventListener('submit', async (e) => {
 
 // ---------- Settings ----------
 async function loadSettings() {
-  const s = await api('/api/settings');
+  const [s, a] = await Promise.all([api('/api/settings'), api('/api/app-settings')]);
   $('#setSinglesWin').value = s.points_per_singles_win;
   $('#setDoublesWin').value = s.points_per_doubles_win;
   $('#setFrameWon').value = s.points_per_frame_won;
   $('#setWinBonus').value = s.match_win_bonus;
+  $('#setAccentColor').value = a.accent_color;
 }
+
+$('#brandingForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const updated = await api('/api/app-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ accent_color: $('#setAccentColor').value }),
+  });
+  applyAccent(updated.accent_color);
+  alert('Branding saved.');
+});
 
 $('#settingsForm').addEventListener('submit', async (e) => {
   e.preventDefault();

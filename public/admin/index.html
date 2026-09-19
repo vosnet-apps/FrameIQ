@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../styles.css" />
+  <script src="../theme.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -272,6 +273,15 @@
 
     <section id="tab-settings" class="tab-panel">
       <div class="panel-header">
+        <h2>Branding</h2>
+      </div>
+      <form id="brandingForm" class="settings-form">
+        <label>Accent color <input type="color" id="setAccentColor" required /></label>
+        <button type="submit">Save Branding</button>
+      </form>
+      <p class="hint">Changes the app's accent color everywhere — buttons, active tabs, links — for every visitor.</p>
+
+      <div class="panel-header" style="margin-top: 28px;">
         <h2>Scoring Settings</h2>
       </div>
       <form id="settingsForm" class="settings-form">

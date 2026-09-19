@@ -609,6 +609,12 @@ select.result-lost { background: var(--red-soft); color: #f0838c; border-color: 
 .week-details-form input[type=number] { width: 80px; }
 .week-details-form input[type=text] { width: 160px; }
 .settings-form input[type=number] { width: 90px; }
+.settings-form input[type=color] {
+  width: 56px;
+  height: 34px;
+  padding: 2px;
+  cursor: pointer;
+}
 .settings-form button { align-self: flex-end; }
 
 .week-entry-panel input[type=number] {

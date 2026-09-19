@@ -80,9 +80,18 @@ CREATE TABLE IF NOT EXISTS league_settings (
   points_per_frame_won REAL NOT NULL DEFAULT 1,
   match_win_bonus REAL NOT NULL DEFAULT 1
 );
+
+-- Single-row table (id is always 1) holding app-wide branding. Starts with the same
+-- crimson used in styles.css, so switching this on changes nothing until an admin picks
+-- a different color.
+CREATE TABLE IF NOT EXISTS app_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  accent_color TEXT NOT NULL DEFAULT '#b3182b'
+);
 `);
 
 db.exec('INSERT OR IGNORE INTO league_settings (id) VALUES (1)');
+db.exec('INSERT OR IGNORE INTO app_settings (id) VALUES (1)');
 
 // Migrate older databases created before venue/score/is_bye columns existed.
 const matchWeekColumns = db.prepare("PRAGMA table_info(match_weeks)").all().map((c) => c.name);

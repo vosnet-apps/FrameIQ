@@ -61,6 +61,8 @@ const get = (sql, params = []) => db.prepare(sql).get(...params);
 const run = (sql, params = []) => db.prepare(sql).run(...params);
 
 const getSettings = () => get('SELECT * FROM league_settings WHERE id = 1');
+const getAppSettings = () => get('SELECT * FROM app_settings WHERE id = 1');
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 // ---------- Players ----------
 app.get('/api/players', requireAdmin, (req, res) => {
@@ -401,6 +403,19 @@ app.put('/api/settings', requireAdmin, (req, res) => {
     ]
   );
   res.json(getSettings());
+});
+
+// ---------- App settings (branding) ----------
+app.get('/api/app-settings', (req, res) => {
+  res.json(getAppSettings());
+});
+
+app.put('/api/app-settings', requireAdmin, (req, res) => {
+  const existing = getAppSettings();
+  const { accent_color } = req.body;
+  const clean = HEX_COLOR_RE.test(accent_color || '') ? accent_color : existing.accent_color;
+  run('UPDATE app_settings SET accent_color = ? WHERE id = 1', [clean]);
+  res.json(getAppSettings());
 });
 
 // ---------- Stats ----------
