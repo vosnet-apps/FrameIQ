@@ -82,6 +82,19 @@ CREATE TABLE IF NOT EXISTS league_settings (
   allow_draws INTEGER NOT NULL DEFAULT 1
 );
 
+-- Admin login sessions (see session-store.js) and a generated signing secret, so both
+-- survive restarts without the host having to set SESSION_SECRET.
+CREATE TABLE IF NOT EXISTS sessions (
+  sid TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  expires INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS server_secrets (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  session_secret TEXT NOT NULL
+);
+
 -- Single-row table (id is always 1) holding app-wide branding. Starts with the same
 -- crimson used in styles.css, so switching this on changes nothing until an admin picks
 -- a different color.

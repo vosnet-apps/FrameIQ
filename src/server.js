@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
+import { SqliteSessionStore } from './session-store.js';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,18 +16,78 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, '..', 'public');
 const adminDir = path.join(publicDir, 'admin');
 
+// Signing secret: SESSION_SECRET if the host sets one, otherwise generated once and kept
+// in the database so sessions stay valid across restarts.
+function sessionSecret() {
+  // 'changeme' is the placeholder from .env.example - never sign cookies with that.
+  if (process.env.SESSION_SECRET && process.env.SESSION_SECRET !== 'changeme') return process.env.SESSION_SECRET;
+  const row = db.prepare('SELECT session_secret FROM server_secrets WHERE id = 1').get();
+  if (row) return row.session_secret;
+  const generated = crypto.randomBytes(32).toString('hex');
+  db.prepare('INSERT INTO server_secrets (id, session_secret) VALUES (1, ?)').run(generated);
+  return generated;
+}
+
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1); // needed for correct client IPs/protocol behind Railway's proxy
+
+// Security headers. The CSP allows only our own scripts (no inline script), Google Fonts
+// for the typeface, and inline style attributes (a few are used in the markup).
+app.use((req, res, next) => {
+  res.set({
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src https://fonts.gstatic.com",
+      "img-src 'self' data: blob:",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '),
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  });
+  if (req.secure) res.set('Strict-Transport-Security', 'max-age=15552000');
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+    store: new SqliteSessionStore(),
+    secret: sessionSecret(),
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 },
+    // SameSite=Lax keeps the cookie off cross-site POST/PUT/DELETE; 'auto' marks it
+    // Secure whenever the request arrived over HTTPS (works behind the proxy too).
+    cookie: { httpOnly: true, sameSite: 'lax', secure: 'auto', maxAge: 30 * 24 * 60 * 60 * 1000 },
   })
 );
+
+// CSRF defence in depth on top of SameSite: browsers always send Origin on cross-site
+// writes, so refuse any state-changing request whose Origin isn't this site.
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.get('origin');
+  if (origin) {
+    let originHost = null;
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      /* "null" or malformed - rejected below */
+    }
+    const ownHost = (req.get('x-forwarded-host') || req.get('host') || '').split(',')[0].trim();
+    if (originHost !== ownHost) return res.status(403).json({ error: 'Cross-origin request blocked' });
+  }
+  next();
+});
 
 function requireAdmin(req, res, next) {
   if (req.session && req.session.isAdmin) return next();
@@ -36,16 +97,55 @@ function requireAdmin(req, res, next) {
   res.redirect('/admin/login');
 }
 
+// Login throttling: after 5 wrong passwords from one IP, refuse all attempts from it
+// (even a correct one, so guessing can't continue) until the window expires.
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_FAILS = 5;
+const loginFails = new Map(); // ip -> { count, firstAt }
+
+function loginBlocked(ip) {
+  const entry = loginFails.get(ip);
+  if (!entry) return false;
+  if (Date.now() - entry.firstAt > LOGIN_WINDOW_MS) {
+    loginFails.delete(ip);
+    return false;
+  }
+  return entry.count >= LOGIN_MAX_FAILS;
+}
+
+function recordLoginFailure(ip) {
+  const entry = loginFails.get(ip);
+  if (!entry || Date.now() - entry.firstAt > LOGIN_WINDOW_MS) loginFails.set(ip, { count: 1, firstAt: Date.now() });
+  else entry.count += 1;
+}
+
+setInterval(() => {
+  for (const [ip, entry] of loginFails) if (Date.now() - entry.firstAt > LOGIN_WINDOW_MS) loginFails.delete(ip);
+}, LOGIN_WINDOW_MS).unref();
+
+// Hash both sides so timingSafeEqual gets equal-length buffers whatever was typed.
+function passwordMatches(input) {
+  const digest = (s) => crypto.createHash('sha256').update(String(s)).digest();
+  return crypto.timingSafeEqual(digest(input), digest(process.env.ADMIN_PASSWORD));
+}
+
 app.get('/admin/login', (req, res) => {
   if (req.session.isAdmin) return res.redirect('/admin');
   res.sendFile(path.join(adminDir, 'login.html'));
 });
 
 app.post('/admin/login', (req, res) => {
-  if (req.body.password && req.body.password === process.env.ADMIN_PASSWORD) {
-    req.session.isAdmin = true;
-    return res.redirect('/admin');
+  if (loginBlocked(req.ip)) return res.redirect('/admin/login?error=2');
+  if (req.body.password && passwordMatches(req.body.password)) {
+    loginFails.delete(req.ip);
+    // New session id on privilege change (prevents session fixation).
+    return req.session.regenerate((err) => {
+      if (err) return res.redirect('/admin/login?error=1');
+      req.session.isAdmin = true;
+      res.redirect('/admin');
+    });
   }
+  recordLoginFailure(req.ip);
   res.redirect('/admin/login?error=1');
 });
 
@@ -654,6 +754,28 @@ app.post('/api/admin/import', requireAdmin, (req, res) => {
       return res.status(400).json({ error: `Backup file is missing or has an invalid "${table}" section.` });
     }
   }
+  // Column names come from the uploaded file and end up in the SQL text (they can't be
+  // bound as parameters), so only names that really exist on the table are allowed.
+  // Everything is checked before the first insert so a bad file changes nothing.
+  const allowedColumns = Object.fromEntries(
+    BACKUP_TABLES.map((t) => [t, new Set(db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name))])
+  );
+  for (const table of BACKUP_TABLES) {
+    for (const row of dump[table]) {
+      if (row === null || typeof row !== 'object' || Array.isArray(row)) {
+        return res.status(400).json({ error: `"${table}" contains a row that isn't an object.` });
+      }
+      for (const [col, value] of Object.entries(row)) {
+        if (!allowedColumns[table].has(col)) {
+          return res.status(400).json({ error: `"${table}" has an unknown column: ${col.slice(0, 40)}` });
+        }
+        if (value !== null && !['string', 'number'].includes(typeof value)) {
+          return res.status(400).json({ error: `"${table}" column ${col} has an unsupported value.` });
+        }
+      }
+    }
+  }
+
   db.exec('BEGIN');
   try {
     for (const table of BACKUP_TABLES) {

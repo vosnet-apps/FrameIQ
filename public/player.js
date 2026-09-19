@@ -38,7 +38,7 @@ function notFound() {
 
   const badges = [];
   if (data.player.is_original) badges.push('<span class="pill">Original Member</span>');
-  if (data.player.left_date) badges.push(`<span class="pill ex">Left ${data.player.left_date}</span>`);
+  if (data.player.left_date) badges.push(`<span class="pill ex">Left ${escapeHtml(data.player.left_date)}</span>`);
   $('#playerBadges').innerHTML = badges.join('');
 
   const c = data.career;
@@ -51,7 +51,7 @@ function notFound() {
   $('#seasonTable tbody').innerHTML = data.seasons
     .map(
       (s) => `<tr>
-        <td>${s.season_name}</td>
+        <td>${escapeHtml(s.season_name)}</td>
         <td>${s.appearances}</td>
         <td>${s.singles_won}</td>
         <td>${s.doubles_won}</td>
@@ -89,11 +89,11 @@ function notFound() {
       }
 
       return `<tr>
-        <td>${m.season_name}</td>
+        <td>${escapeHtml(m.season_name)}</td>
         <td>Week ${m.week_number}</td>
-        <td>${m.match_date || '—'}</td>
-        <td>${m.venue || '—'}</td>
-        <td>${m.opponent || '—'}</td>
+        <td>${escapeHtml(m.match_date || '—')}</td>
+        <td>${escapeHtml(m.venue || '—')}</td>
+        <td>${escapeHtml(m.opponent || '—')}</td>
         <td>${score}</td>
         <td><span class="result-pill ${resultClass}">${result}</span></td>
         <td>${frameCell(m.singles_won, m.singles_lost)}</td>

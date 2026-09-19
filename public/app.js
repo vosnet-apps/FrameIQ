@@ -29,7 +29,7 @@ async function loadSeasonPicker() {
   state.seasons = await api('/api/seasons');
   const sel = $('#seasonSelect');
   sel.innerHTML = state.seasons
-    .map((s) => `<option value="${s.id}">${s.name}${s.is_active ? ' (active)' : ''}</option>`)
+    .map((s) => `<option value="${s.id}">${escapeHtml(s.name)}${s.is_active ? ' (active)' : ''}</option>`)
     .join('');
   const active = state.seasons.find((s) => s.is_active) || state.seasons[state.seasons.length - 1];
   state.currentSeasonId = active ? active.id : null;
@@ -156,7 +156,7 @@ function renderStats(rows) {
   tbody.innerHTML = sorted
     .map(
       (r) => `<tr>
-        <td><a class="player-link" href="/player.html?id=${r.player_id}">${r.name}</a></td>
+        <td><a class="player-link" href="/player.html?id=${r.player_id}">${escapeHtml(r.name)}</a></td>
         <td>${r.appearances}</td>
         <td>${r.singles_won}</td>
         <td>${r.doubles_won}</td>
@@ -215,9 +215,9 @@ async function loadResults() {
       const resultClass = result === 'Win' ? 'result-won' : result === 'Loss' ? 'result-lost' : result === 'BYE' ? 'result-bye' : '';
       return `<tr>
         <td>Week ${w.week_number}</td>
-        <td>${w.match_date || '—'}</td>
-        <td>${w.venue || '—'}</td>
-        <td>${w.opponent || '—'}</td>
+        <td>${escapeHtml(w.match_date || '—')}</td>
+        <td>${escapeHtml(w.venue || '—')}</td>
+        <td>${escapeHtml(w.opponent || '—')}</td>
         <td>${score}</td>
         <td><span class="result-pill ${resultClass}">${result}</span></td>
       </tr>`;
@@ -246,14 +246,14 @@ function renderH2H(data) {
   tbody.innerHTML = sorted
     .map(
       (r) => `<tr>
-        <td>${r.opponent}</td>
+        <td>${escapeHtml(r.opponent)}</td>
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.losses}</td>
         ${data.allow_draws ? `<td>${r.draws}</td>` : ''}
         <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
         <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
-        <td>${r.last_played || '—'}</td>
+        <td>${escapeHtml(r.last_played || '—')}</td>
       </tr>`
     )
     .join('');

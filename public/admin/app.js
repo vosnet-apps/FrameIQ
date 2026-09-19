@@ -149,7 +149,7 @@ async function loadSeasonPicker() {
   state.seasons = await api('/api/seasons');
   const sel = $('#seasonSelect');
   sel.innerHTML = state.seasons
-    .map((s) => `<option value="${s.id}">${s.name}${s.is_active ? ' (active)' : ''}</option>`)
+    .map((s) => `<option value="${s.id}">${escapeHtml(s.name)}${s.is_active ? ' (active)' : ''}</option>`)
     .join('');
   const active = state.seasons.find((s) => s.is_active) || state.seasons[state.seasons.length - 1];
   state.currentSeasonId = active ? active.id : null;
@@ -285,9 +285,9 @@ async function loadResults() {
       const resultClass = result === 'Win' ? 'result-won' : result === 'Loss' ? 'result-lost' : result === 'BYE' ? 'result-bye' : '';
       return `<tr>
         <td>Week ${w.week_number}</td>
-        <td>${w.match_date || '—'}</td>
-        <td>${w.venue || '—'}</td>
-        <td>${w.opponent || '—'}</td>
+        <td>${escapeHtml(w.match_date || '—')}</td>
+        <td>${escapeHtml(w.venue || '—')}</td>
+        <td>${escapeHtml(w.opponent || '—')}</td>
         <td>${score}</td>
         <td><span class="result-pill ${resultClass}">${result}</span></td>
       </tr>`;
@@ -309,7 +309,7 @@ function renderStats(rows) {
   tbody.innerHTML = sorted
     .map(
       (r) => `<tr>
-        <td><a class="player-link" href="/player.html?id=${r.player_id}" target="_blank" rel="noopener">${r.name}</a></td>
+        <td><a class="player-link" href="/player.html?id=${r.player_id}" target="_blank" rel="noopener">${escapeHtml(r.name)}</a></td>
         <td>${r.appearances}</td>
         <td>${r.singles_won}</td>
         <td>${r.doubles_won}</td>
@@ -352,14 +352,14 @@ function renderH2H(data) {
   tbody.innerHTML = sorted
     .map(
       (r) => `<tr>
-        <td>${r.opponent}</td>
+        <td>${escapeHtml(r.opponent)}</td>
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.losses}</td>
         ${data.allow_draws ? `<td>${r.draws}</td>` : ''}
         <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
         <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
-        <td>${r.last_played || '—'}</td>
+        <td>${escapeHtml(r.last_played || '—')}</td>
       </tr>`
     )
     .join('');
@@ -376,7 +376,7 @@ async function loadWeeks() {
       const label = w.is_aggregate ? w.label : `Week ${w.week_number}`;
       const bits = [w.match_date, w.venue, w.opponent, (w.score_for != null && w.score_against != null) ? `${w.score_for}-${w.score_against}` : null].filter(Boolean);
       return `<div class="week-chip ${w.id === state.selectedWeekId ? 'selected' : ''}" data-id="${w.id}">
-        <span>${label}${bits.length ? ' · ' + bits.join(' · ') : ''}</span>
+        <span>${escapeHtml(label)}${bits.length ? ' · ' + bits.map(escapeHtml).join(' · ') : ''}</span>
         <span class="del" data-del="${w.id}" title="Delete week">✕</span>
       </div>`;
     })
@@ -482,7 +482,7 @@ async function loadWeekEntry() {
     body.innerHTML = data.roster
       .map(
         (r) => `<tr>
-          <td>${r.name}</td>
+          <td>${escapeHtml(r.name)}</td>
           <td>${r.singles_won ?? 0}</td>
           <td>${r.singles_lost ?? 'n/a'}</td>
           <td>${r.doubles_won ?? 0}</td>
@@ -507,7 +507,7 @@ async function loadWeekEntry() {
       const singlesResult = resultOf(r.singles_won ?? 0, r.singles_lost ?? 0);
       const doublesResult = resultOf(r.doubles_won ?? 0, r.doubles_lost ?? 0);
       return `<tr data-player="${r.player_id}">
-        <td>${r.name}</td>
+        <td>${escapeHtml(r.name)}</td>
         <td>${resultSelect('singles-result', singlesResult)}</td>
         <td>${resultSelect('doubles-result', doublesResult)}</td>
       </tr>`;
@@ -564,7 +564,7 @@ async function loadRoster() {
   const sel = $('#rosterPlayerSelect');
   sel.innerHTML = players
     .filter((p) => !rosterIds.has(p.id))
-    .map((p) => `<option value="${p.id}">${p.name}</option>`)
+    .map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
     .join('');
 
   const sortedRoster = sortRows(roster, state.rosterSortKey, state.rosterSortDir);
@@ -573,7 +573,7 @@ async function loadRoster() {
   body.innerHTML = sortedRoster
     .map(
       (r) => `<tr>
-        <td>${r.name}</td>
+        <td>${escapeHtml(r.name)}</td>
         <td>${r.is_original ? '✓' : ''}</td>
         <td>
           <select data-role="${r.player_id}">
@@ -636,11 +636,11 @@ async function loadPlayers() {
   body.innerHTML = sortedPlayers
     .map(
       (p) => `<tr data-player-row="${p.id}">
-        <td><input type="text" class="f-name" value="${escapeAttr(p.name)}" /></td>
+        <td><input type="text" class="f-name" value="${escapeHtml(p.name)}" /></td>
         <td><input type="checkbox" class="f-original" ${p.is_original ? 'checked' : ''} /></td>
-        <td><input type="date" class="f-joined" value="${p.joined_date || ''}" /></td>
-        <td><input type="date" class="f-left" value="${p.left_date || ''}" /></td>
-        <td><input type="text" class="f-notes" value="${escapeAttr(p.notes || '')}" /></td>
+        <td><input type="date" class="f-joined" value="${escapeHtml(p.joined_date || '')}" /></td>
+        <td><input type="date" class="f-left" value="${escapeHtml(p.left_date || '')}" /></td>
+        <td><input type="text" class="f-notes" value="${escapeHtml(p.notes || '')}" /></td>
         <td class="actions"><button class="danger" data-delete="${p.id}">Delete</button></td>
       </tr>`
     )
@@ -674,10 +674,6 @@ async function loadPlayers() {
   });
 
   markSortedHeaders('playersTable', 'playersSortKey', 'playersSortDir');
-}
-
-function escapeAttr(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
 wireSortableHeaders('rosterTable', 'rosterSortKey', 'rosterSortDir', loadRoster);
@@ -714,9 +710,9 @@ async function loadSeasons() {
   body.innerHTML = seasons
     .map(
       (s) => `<tr>
-        <td>${s.name}</td>
-        <td><input type="date" data-start="${s.id}" value="${s.start_date || ''}" /></td>
-        <td><input type="date" data-end="${s.id}" value="${s.end_date || ''}" /></td>
+        <td>${escapeHtml(s.name)}</td>
+        <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
+        <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
         <td class="actions"><button class="danger" data-delseason="${s.id}">Delete</button></td>
       </tr>`

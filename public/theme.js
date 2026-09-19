@@ -4,6 +4,16 @@
 (function () {
   const initialTitle = document.title;
 
+  // Shared by every page: names, opponents, venues etc. are free text an admin typed,
+  // so anything interpolated into innerHTML goes through this first.
+  window.escapeHtml = (value) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
   function shade(hex, percent) {
     const num = parseInt(hex.slice(1), 16);
     const amt = Math.round(2.55 * percent);

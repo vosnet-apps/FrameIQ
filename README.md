@@ -37,7 +37,7 @@ npm install
 cp .env.example .env
 ```
 
-Then edit `.env` and set your own `ADMIN_PASSWORD` (and ideally `SESSION_SECRET` — a random string; a command to generate one is in the file). Then:
+Then edit `.env` and set your own `ADMIN_PASSWORD` (`SESSION_SECRET` is optional — see below). Then:
 
 ```
 npm start
@@ -50,7 +50,7 @@ Open http://localhost:4173 in your browser. Leave the terminal window open while
 - **`/`** — public, no login required. Shows Performance and Match Results for whichever season is selected. This is what you'd share with players.
 - **`/admin`** — everything else (Match Entry, Roster, Players, Seasons management, Settings), gated behind the password in `.env`. Log in at `/admin/login`.
 
-If you put this online, make sure `.env` is never committed or exposed — `.gitignore` already excludes it. Sessions are stored in server memory, so restarting the server logs everyone out (fine for a small team tool; if you outgrow that, swap in a persistent session store).
+If you put this online, make sure `.env` is never committed or exposed — `.gitignore` already excludes it. Sessions are stored in the database, so admin logins survive restarts and redeploys. Login is rate-limited (5 wrong passwords per IP locks it out for 15 minutes), cookies are HttpOnly + SameSite=Lax (Secure over HTTPS), cross-origin writes are rejected, and pages are served with a Content-Security-Policy and other security headers. `SESSION_SECRET` is optional — if unset, a random one is generated and kept in the database.
 
 ## How the data model works
 
