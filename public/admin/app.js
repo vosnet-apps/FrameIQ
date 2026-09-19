@@ -552,6 +552,9 @@ async function loadWeekEntry() {
 }
 
 // ---------- Roster ----------
+// "Vice-Captain" -> "tone-vicecaptain": lets the CSS colour a select by its current value.
+const toneClass = (value) => 'tone-' + String(value).toLowerCase().replace(/[^a-z]/g, '');
+
 async function loadRoster() {
   if (!state.currentSeasonId) return;
   const [roster, players] = await Promise.all([
@@ -576,12 +579,12 @@ async function loadRoster() {
         <td>${escapeHtml(r.name)}</td>
         <td>${r.is_original ? '✓' : ''}</td>
         <td>
-          <select data-role="${r.player_id}">
+          <select class="pill-select ${toneClass(r.role)}" data-role="${r.player_id}">
             ${['Member', 'Vice-Captain', 'Captain'].map((o) => `<option ${o === r.role ? 'selected' : ''}>${o}</option>`).join('')}
           </select>
         </td>
         <td>
-          <select data-pick="${r.player_id}">
+          <select class="pill-select ${toneClass(r.pick_status)}" data-pick="${r.player_id}">
             ${['Regular', 'Sub'].map((o) => `<option ${o === r.pick_status ? 'selected' : ''}>${o}</option>`).join('')}
           </select>
         </td>
@@ -592,10 +595,16 @@ async function loadRoster() {
   markSortedHeaders('rosterTable', 'rosterSortKey', 'rosterSortDir');
 
   body.querySelectorAll('[data-role]').forEach((el) => {
-    el.addEventListener('change', () => updateRoster(el.dataset.role));
+    el.addEventListener('change', () => {
+      el.className = 'pill-select ' + toneClass(el.value);
+      updateRoster(el.dataset.role);
+    });
   });
   body.querySelectorAll('[data-pick]').forEach((el) => {
-    el.addEventListener('change', () => updateRoster(el.dataset.pick));
+    el.addEventListener('change', () => {
+      el.className = 'pill-select ' + toneClass(el.value);
+      updateRoster(el.dataset.pick);
+    });
   });
   body.querySelectorAll('[data-remove]').forEach((el) => {
     el.addEventListener('click', async () => {
