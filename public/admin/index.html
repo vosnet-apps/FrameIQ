@@ -294,29 +294,43 @@
     </section>
 
     <section id="tab-settings" class="tab-panel">
-      <div class="panel-header">
-        <h2>Branding</h2>
-      </div>
-      <form id="brandingForm" class="settings-form">
-        <label>Accent color <input type="color" id="setAccentColor" required /></label>
-        <button type="submit">Save Branding</button>
-      </form>
-      <p class="hint">Changes the app's accent color everywhere — buttons, active tabs, links — for every visitor.</p>
+      <form id="settingsForm">
+        <div class="panel-header">
+          <h2>Branding</h2>
+        </div>
+        <div class="settings-form">
+          <label>Accent color <input type="color" id="setAccentColor" required /></label>
+        </div>
+        <p class="hint">Changes the app's accent color everywhere — buttons, active tabs, links — for every visitor.</p>
 
-      <div class="panel-header" style="margin-top: 28px;">
-        <h2>Scoring Settings</h2>
-      </div>
-      <form id="settingsForm" class="settings-form">
-        <label>Points per singles win <input type="number" id="setSinglesWin" min="0" step="0.5" required /></label>
-        <label>Points per doubles win <input type="number" id="setDoublesWin" min="0" step="0.5" required /></label>
-        <label>Team points per frame won <input type="number" id="setFrameWon" min="0" step="0.5" required /></label>
-        <label>Team bonus for winning the match <input type="number" id="setWinBonus" min="0" step="0.5" required /></label>
-        <label><input type="checkbox" id="setAllowDraws" /> Show drawn games in head-to-head stats</label>
-        <button type="submit">Save Settings</button>
+        <div class="panel-header" style="margin-top: 28px;">
+          <h2>Scoring Settings</h2>
+        </div>
+        <div class="settings-form">
+          <label>Points per singles win <input type="number" id="setSinglesWin" min="0" step="0.5" required /></label>
+          <label>Points per doubles win <input type="number" id="setDoublesWin" min="0" step="0.5" required /></label>
+          <label>Team points per frame won <input type="number" id="setFrameWon" min="0" step="0.5" required /></label>
+          <label>Team bonus for winning the match <input type="number" id="setWinBonus" min="0" step="0.5" required /></label>
+        </div>
+        <p class="hint">These control every player's Total Points and the team's League Points, everywhere in the app — past weeks are recalculated too, not just new ones.</p>
+        <p class="hint">BYE weeks keep working the same regardless of these settings: they still earn "points per frame won" for the score recorded on that week, but never the match-win bonus.</p>
+
+        <div class="panel-header" style="margin-top: 28px;">
+          <h2>Other</h2>
+        </div>
+        <div class="settings-form">
+          <label class="toggle-switch">
+            <input type="checkbox" id="setAllowDraws" />
+            <span class="toggle-slider"></span>
+            Show drawn games in head-to-head stats
+          </label>
+        </div>
+        <p class="hint">Turn off drawn games if your league's match format can never actually end level — head-to-head will then treat every recorded match as won or lost.</p>
+
+        <div style="margin-top: 28px;">
+          <button type="submit">Save Settings</button>
+        </div>
       </form>
-      <p class="hint">These control every player's Total Points and the team's League Points, everywhere in the app — past weeks are recalculated too, not just new ones.</p>
-      <p class="hint">BYE weeks keep working the same regardless of these settings: they still earn "points per frame won" for the score recorded on that week, but never the match-win bonus.</p>
-      <p class="hint">Turn off drawn games if your league's match format can never actually end level — head-to-head will then treat every recorded match as won or lost.</p>
     </section>
       </main>
     </div>

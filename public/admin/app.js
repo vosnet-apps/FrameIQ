@@ -767,28 +767,25 @@ async function loadSettings() {
   $('#setAccentColor').value = a.accent_color;
 }
 
-$('#brandingForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const updated = await api('/api/app-settings', {
-    method: 'PUT',
-    body: JSON.stringify({ accent_color: $('#setAccentColor').value }),
-  });
-  applyAccent(updated.accent_color);
-  alert('Branding saved.');
-});
-
 $('#settingsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  await api('/api/settings', {
-    method: 'PUT',
-    body: JSON.stringify({
-      points_per_singles_win: Number($('#setSinglesWin').value),
-      points_per_doubles_win: Number($('#setDoublesWin').value),
-      points_per_frame_won: Number($('#setFrameWon').value),
-      match_win_bonus: Number($('#setWinBonus').value),
-      allow_draws: $('#setAllowDraws').checked,
+  const [, updatedApp] = await Promise.all([
+    api('/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify({
+        points_per_singles_win: Number($('#setSinglesWin').value),
+        points_per_doubles_win: Number($('#setDoublesWin').value),
+        points_per_frame_won: Number($('#setFrameWon').value),
+        match_win_bonus: Number($('#setWinBonus').value),
+        allow_draws: $('#setAllowDraws').checked,
+      }),
     }),
-  });
+    api('/api/app-settings', {
+      method: 'PUT',
+      body: JSON.stringify({ accent_color: $('#setAccentColor').value }),
+    }),
+  ]);
+  applyAccent(updatedApp.accent_color);
   await loadKpis();
   if (activeTab() === 'stats') {
     if (state.statsView === 'performance') loadStats();
