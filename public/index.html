@@ -71,6 +71,7 @@
         <div class="view-toggle">
           <button class="view-toggle-btn active" data-view="performance">Performance</button>
           <button class="view-toggle-btn" data-view="results">Match Results</button>
+          <button class="view-toggle-btn" data-view="h2h">Head-to-Head</button>
         </div>
         <label class="all-time-toggle" id="allTimeToggleWrap"><input type="checkbox" id="allTimeToggle" /> All-time (career)</label>
       </div>
@@ -114,6 +115,27 @@
         </table>
         </div>
         <p id="resultsEmpty" class="hint" hidden>No match results recorded for this season.</p>
+      </div>
+
+      <div id="h2hView" hidden>
+        <div class="table-scroll">
+        <table id="h2hTable" class="data-table sortable">
+          <thead>
+            <tr>
+              <th data-key="opponent">Opponent</th>
+              <th data-key="played">Played</th>
+              <th data-key="wins">W</th>
+              <th data-key="losses">L</th>
+              <th data-key="draws">D</th>
+              <th data-key="win_pct">Win %</th>
+              <th data-key="frame_diff">Frames (For-Against)</th>
+              <th data-key="last_played">Last Played</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="hint">All-time — every season, excluding BYE weeks.</p>
       </div>
     </section>
   </main>

@@ -5,6 +5,8 @@ const state = {
   statsSortDir: 'desc',
   statsView: 'performance',
   formMap: {},
+  h2hSortKey: 'opponent',
+  h2hSortDir: 'asc',
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -36,7 +38,8 @@ async function loadSeasonPicker() {
 
 function refresh() {
   if (state.statsView === 'performance') loadStats();
-  else loadResults();
+  else if (state.statsView === 'results') loadResults();
+  else loadH2H();
 }
 
 // ---------- View toggle ----------
@@ -47,6 +50,7 @@ $$('.view-toggle-btn').forEach((btn) => {
     state.statsView = btn.dataset.view;
     $('#performanceView').hidden = state.statsView !== 'performance';
     $('#resultsView').hidden = state.statsView !== 'results';
+    $('#h2hView').hidden = state.statsView !== 'h2h';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     refresh();
   });
@@ -220,6 +224,56 @@ async function loadResults() {
     })
     .join('');
 }
+
+// ---------- Head-to-head (all-time, not season-scoped) ----------
+async function loadH2H() {
+  const rows = await api('/api/stats/head-to-head');
+  renderH2H(rows);
+}
+
+function renderH2H(rows) {
+  const sorted = [...rows].sort((a, b) => {
+    const dir = state.h2hSortDir === 'asc' ? 1 : -1;
+    const av = a[state.h2hSortKey];
+    const bv = b[state.h2hSortKey];
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  const tbody = $('#h2hTable tbody');
+  tbody.innerHTML = sorted
+    .map(
+      (r) => `<tr>
+        <td>${r.opponent}</td>
+        <td>${r.played}</td>
+        <td>${r.wins}</td>
+        <td>${r.losses}</td>
+        <td>${r.draws}</td>
+        <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
+        <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
+        <td>${r.last_played || '—'}</td>
+      </tr>`
+    )
+    .join('');
+
+  $$('#h2hTable th[data-key]').forEach((th) => {
+    th.classList.toggle('sorted', th.dataset.key === state.h2hSortKey);
+    th.classList.toggle('asc', th.dataset.key === state.h2hSortKey && state.h2hSortDir === 'asc');
+  });
+}
+
+$$('#h2hTable th[data-key]').forEach((th) => {
+  th.addEventListener('click', () => {
+    if (state.h2hSortKey === th.dataset.key) {
+      state.h2hSortDir = state.h2hSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.h2hSortKey = th.dataset.key;
+      state.h2hSortDir = 'asc';
+    }
+    loadH2H();
+  });
+});
 
 // ---------- Init ----------
 (async function init() {

@@ -541,6 +541,45 @@ app.get('/api/stats/form', (req, res) => {
   res.json(Array.from(byPlayer.values()));
 });
 
+// ---------- Stats: head-to-head (all-time, every season) ----------
+// Deliberately not season-scoped - the point is the pattern across the team's whole
+// history against each opponent. BYE weeks and aggregate (season-total) rows have no
+// real opponent, so they're excluded rather than showing up as a fake "opponent".
+app.get('/api/stats/head-to-head', (req, res) => {
+  const rows = all(
+    `SELECT
+       opponent,
+       COUNT(*) AS played,
+       SUM(CASE WHEN score_for > score_against THEN 1 ELSE 0 END) AS wins,
+       SUM(CASE WHEN score_for < score_against THEN 1 ELSE 0 END) AS losses,
+       SUM(CASE WHEN score_for = score_against THEN 1 ELSE 0 END) AS draws,
+       SUM(score_for) AS frames_for,
+       SUM(score_against) AS frames_against,
+       MAX(match_date) AS last_played
+     FROM match_weeks
+     WHERE is_aggregate = 0 AND is_bye = 0
+       AND opponent IS NOT NULL AND TRIM(opponent) != ''
+       AND score_for IS NOT NULL AND score_against IS NOT NULL
+     GROUP BY opponent
+     ORDER BY opponent COLLATE NOCASE`
+  );
+
+  res.json(
+    rows.map((r) => ({
+      opponent: r.opponent,
+      played: r.played,
+      wins: r.wins,
+      losses: r.losses,
+      draws: r.draws,
+      win_pct: r.played > 0 ? r.wins / r.played : null,
+      frames_for: r.frames_for,
+      frames_against: r.frames_against,
+      frame_diff: r.frames_for - r.frames_against,
+      last_played: r.last_played,
+    }))
+  );
+});
+
 // ---------- Backup / restore ----------
 // Used to move data between environments (e.g. local -> a fresh host), since the
 // database file itself typically isn't something you can just copy across hosts.

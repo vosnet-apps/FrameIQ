@@ -11,6 +11,8 @@ const state = {
   rosterSortDir: 'asc',
   playersSortKey: null,
   playersSortDir: 'asc',
+  h2hSortKey: 'opponent',
+  h2hSortDir: 'asc',
 };
 
 // Generic sort used by the Roster and Players tables (Stats has its own, unrelated
@@ -124,7 +126,11 @@ function activeTab() {
 
 function refreshCurrentTab() {
   const tab = activeTab();
-  if (tab === 'stats') (state.statsView === 'performance' ? loadStats() : loadResults());
+  if (tab === 'stats') {
+    if (state.statsView === 'performance') loadStats();
+    else if (state.statsView === 'results') loadResults();
+    else loadH2H();
+  }
   if (tab === 'matches') loadWeeks();
   if (tab === 'roster') loadRoster();
   if (tab === 'players') loadPlayers();
@@ -158,9 +164,11 @@ $$('.view-toggle-btn').forEach((btn) => {
     state.statsView = btn.dataset.view;
     $('#performanceView').hidden = state.statsView !== 'performance';
     $('#resultsView').hidden = state.statsView !== 'results';
+    $('#h2hView').hidden = state.statsView !== 'h2h';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     if (state.statsView === 'performance') loadStats();
-    else loadResults();
+    else if (state.statsView === 'results') loadResults();
+    else loadH2H();
   });
 });
 
@@ -330,6 +338,32 @@ $$('#statsTable th[data-key]').forEach((th) => {
     loadStats();
   });
 });
+
+// ---------- Head-to-head (all-time, not season-scoped) ----------
+async function loadH2H() {
+  const rows = await api('/api/stats/head-to-head');
+  renderH2H(rows);
+}
+
+function renderH2H(rows) {
+  const sorted = sortRows(rows, state.h2hSortKey, state.h2hSortDir);
+  const tbody = $('#h2hTable tbody');
+  tbody.innerHTML = sorted
+    .map(
+      (r) => `<tr>
+        <td>${r.opponent}</td>
+        <td>${r.played}</td>
+        <td>${r.wins}</td>
+        <td>${r.losses}</td>
+        <td>${r.draws}</td>
+        <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
+        <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
+        <td>${r.last_played || '—'}</td>
+      </tr>`
+    )
+    .join('');
+  markSortedHeaders('h2hTable', 'h2hSortKey', 'h2hSortDir');
+}
 
 // ---------- Match weeks ----------
 async function loadWeeks() {
@@ -647,6 +681,7 @@ function escapeAttr(str) {
 
 wireSortableHeaders('rosterTable', 'rosterSortKey', 'rosterSortDir', loadRoster);
 wireSortableHeaders('playersTable', 'playersSortKey', 'playersSortDir', loadPlayers);
+wireSortableHeaders('h2hTable', 'h2hSortKey', 'h2hSortDir', loadH2H);
 
 $('#showAddPlayer').addEventListener('click', () => {
   $('#addPlayerForm').hidden = !$('#addPlayerForm').hidden;
