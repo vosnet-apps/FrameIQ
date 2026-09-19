@@ -227,12 +227,13 @@ async function loadResults() {
 
 // ---------- Head-to-head (all-time, not season-scoped) ----------
 async function loadH2H() {
-  const rows = await api('/api/stats/head-to-head');
-  renderH2H(rows);
+  const data = await api('/api/stats/head-to-head');
+  renderH2H(data);
 }
 
-function renderH2H(rows) {
-  const sorted = [...rows].sort((a, b) => {
+function renderH2H(data) {
+  $('#h2hDrawsHeader').hidden = !data.allow_draws;
+  const sorted = [...data.opponents].sort((a, b) => {
     const dir = state.h2hSortDir === 'asc' ? 1 : -1;
     const av = a[state.h2hSortKey];
     const bv = b[state.h2hSortKey];
@@ -249,7 +250,7 @@ function renderH2H(rows) {
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.losses}</td>
-        <td>${r.draws}</td>
+        ${data.allow_draws ? `<td>${r.draws}</td>` : ''}
         <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
         <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
         <td>${r.last_played || '—'}</td>

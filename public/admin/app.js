@@ -341,12 +341,13 @@ $$('#statsTable th[data-key]').forEach((th) => {
 
 // ---------- Head-to-head (all-time, not season-scoped) ----------
 async function loadH2H() {
-  const rows = await api('/api/stats/head-to-head');
-  renderH2H(rows);
+  const data = await api('/api/stats/head-to-head');
+  renderH2H(data);
 }
 
-function renderH2H(rows) {
-  const sorted = sortRows(rows, state.h2hSortKey, state.h2hSortDir);
+function renderH2H(data) {
+  $('#h2hDrawsHeader').hidden = !data.allow_draws;
+  const sorted = sortRows(data.opponents, state.h2hSortKey, state.h2hSortDir);
   const tbody = $('#h2hTable tbody');
   tbody.innerHTML = sorted
     .map(
@@ -355,7 +356,7 @@ function renderH2H(rows) {
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.losses}</td>
-        <td>${r.draws}</td>
+        ${data.allow_draws ? `<td>${r.draws}</td>` : ''}
         <td>${r.win_pct == null ? '—' : (r.win_pct * 100).toFixed(0) + '%'}</td>
         <td>${r.frames_for}-${r.frames_against} (${r.frame_diff > 0 ? '+' : ''}${r.frame_diff})</td>
         <td>${r.last_played || '—'}</td>
@@ -762,6 +763,7 @@ async function loadSettings() {
   $('#setDoublesWin').value = s.points_per_doubles_win;
   $('#setFrameWon').value = s.points_per_frame_won;
   $('#setWinBonus').value = s.match_win_bonus;
+  $('#setAllowDraws').checked = !!s.allow_draws;
   $('#setAccentColor').value = a.accent_color;
 }
 
@@ -784,10 +786,14 @@ $('#settingsForm').addEventListener('submit', async (e) => {
       points_per_doubles_win: Number($('#setDoublesWin').value),
       points_per_frame_won: Number($('#setFrameWon').value),
       match_win_bonus: Number($('#setWinBonus').value),
+      allow_draws: $('#setAllowDraws').checked,
     }),
   });
   await loadKpis();
-  if (activeTab() === 'stats' && state.statsView === 'performance') loadStats();
+  if (activeTab() === 'stats') {
+    if (state.statsView === 'performance') loadStats();
+    else if (state.statsView === 'h2h') loadH2H();
+  }
   alert('Settings saved.');
 });
 

@@ -386,20 +386,21 @@ app.get('/api/settings', (req, res) => {
 
 app.put('/api/settings', requireAdmin, (req, res) => {
   const existing = getSettings();
-  const { points_per_singles_win, points_per_doubles_win, points_per_frame_won, match_win_bonus } = req.body;
+  const { points_per_singles_win, points_per_doubles_win, points_per_frame_won, match_win_bonus, allow_draws } = req.body;
   const clean = (value, fallback) => {
     const n = Number(value);
     return value === undefined || value === null || value === '' || Number.isNaN(n) || n < 0 ? fallback : n;
   };
   run(
     `UPDATE league_settings
-     SET points_per_singles_win = ?, points_per_doubles_win = ?, points_per_frame_won = ?, match_win_bonus = ?
+     SET points_per_singles_win = ?, points_per_doubles_win = ?, points_per_frame_won = ?, match_win_bonus = ?, allow_draws = ?
      WHERE id = 1`,
     [
       clean(points_per_singles_win, existing.points_per_singles_win),
       clean(points_per_doubles_win, existing.points_per_doubles_win),
       clean(points_per_frame_won, existing.points_per_frame_won),
       clean(match_win_bonus, existing.match_win_bonus),
+      allow_draws === undefined ? existing.allow_draws : (allow_draws ? 1 : 0),
     ]
   );
   res.json(getSettings());
@@ -546,6 +547,9 @@ app.get('/api/stats/form', (req, res) => {
 // history against each opponent. BYE weeks and aggregate (season-total) rows have no
 // real opponent, so they're excluded rather than showing up as a fake "opponent".
 app.get('/api/stats/head-to-head', (req, res) => {
+  const settings = getSettings();
+  const allowDraws = !!settings.allow_draws;
+
   const rows = all(
     `SELECT
        opponent,
@@ -564,20 +568,29 @@ app.get('/api/stats/head-to-head', (req, res) => {
      ORDER BY opponent COLLATE NOCASE`
   );
 
-  res.json(
-    rows.map((r) => ({
-      opponent: r.opponent,
-      played: r.played,
-      wins: r.wins,
-      losses: r.losses,
-      draws: r.draws,
-      win_pct: r.played > 0 ? r.wins / r.played : null,
-      frames_for: r.frames_for,
-      frames_against: r.frames_against,
-      frame_diff: r.frames_for - r.frames_against,
-      last_played: r.last_played,
-    }))
-  );
+  // When draws are switched off (a league where a match always has a winner), a scored
+  // 4-4 is treated as a data-entry slip rather than a real draw: it stays in "played" but
+  // counts toward neither W nor L, and the win% denominator drops it rather than the
+  // column just disappearing while still silently deflating the percentage.
+  res.json({
+    allow_draws: allowDraws,
+    opponents: rows.map((r) => {
+      const decided = allowDraws ? r.played : r.wins + r.losses;
+      const shaped = {
+        opponent: r.opponent,
+        played: r.played,
+        wins: r.wins,
+        losses: r.losses,
+        win_pct: decided > 0 ? r.wins / decided : null,
+        frames_for: r.frames_for,
+        frames_against: r.frames_against,
+        frame_diff: r.frames_for - r.frames_against,
+        last_played: r.last_played,
+      };
+      if (allowDraws) shaped.draws = r.draws;
+      return shaped;
+    }),
+  });
 });
 
 // ---------- Backup / restore ----------

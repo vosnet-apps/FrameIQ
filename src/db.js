@@ -78,7 +78,8 @@ CREATE TABLE IF NOT EXISTS league_settings (
   points_per_singles_win REAL NOT NULL DEFAULT 3,
   points_per_doubles_win REAL NOT NULL DEFAULT 1,
   points_per_frame_won REAL NOT NULL DEFAULT 1,
-  match_win_bonus REAL NOT NULL DEFAULT 1
+  match_win_bonus REAL NOT NULL DEFAULT 1,
+  allow_draws INTEGER NOT NULL DEFAULT 1
 );
 
 -- Single-row table (id is always 1) holding app-wide branding. Starts with the same
@@ -99,6 +100,12 @@ for (const [col, type] of [['venue', 'TEXT'], ['score_for', 'INTEGER'], ['score_
   if (!matchWeekColumns.includes(col)) {
     db.exec(`ALTER TABLE match_weeks ADD COLUMN ${col} ${type}`);
   }
+}
+
+// Migrate older databases created before allow_draws existed.
+const leagueSettingsColumns = db.prepare("PRAGMA table_info(league_settings)").all().map((c) => c.name);
+if (!leagueSettingsColumns.includes('allow_draws')) {
+  db.exec('ALTER TABLE league_settings ADD COLUMN allow_draws INTEGER NOT NULL DEFAULT 1');
 }
 
 // One-time, idempotent backfill: weeks already marked "BYE" by opponent name (the old
