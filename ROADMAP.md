@@ -2,6 +2,8 @@
 
 Ideas for future development. Not scheduled, not promises — just a running list so good ideas from planning conversations don't get lost. Pull requests welcome.
 
+**Scope:** FrameIQ is a single-team performance tracker with one shared admin login. Multi-team league standings (tracking other teams' results to build a full league table) and multi-admin / role-based accounts are out of scope for this project, so pull requests for them won't be accepted. The team's own league points total stays as it is.
+
 ## Branding & theming
 
 - [x] **Admin-configurable accent color** — a color picker in Settings, same pattern as the scoring-formula fields, so a team can make it "theirs" without touching CSS.
