@@ -820,6 +820,8 @@ async function loadSeasons() {
     .map(
       (s) => `<tr>
         <td>${escapeHtml(s.name)}</td>
+        <td><input type="text" data-league="${s.id}" value="${escapeHtml(s.league_name || '')}" placeholder="—" maxlength="80" /></td>
+        <td><input type="text" data-division="${s.id}" value="${escapeHtml(s.division || '')}" placeholder="—" maxlength="80" /></td>
         <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
@@ -831,6 +833,17 @@ async function loadSeasons() {
     )
     .join('');
 
+  for (const [attr, field] of [['data-league', 'league_name'], ['data-division', 'division']]) {
+    body.querySelectorAll(`[${attr}]`).forEach((el) =>
+      el.addEventListener('change', async () => {
+        try {
+          await api(`/api/seasons/${el.getAttribute(attr)}`, { method: 'PUT', body: JSON.stringify({ [field]: el.value }) });
+        } catch (err) {
+          alert(err.message);
+        }
+      })
+    );
+  }
   body.querySelectorAll('[data-start]').forEach((el) =>
     el.addEventListener('change', () => api(`/api/seasons/${el.dataset.start}`, { method: 'PUT', body: JSON.stringify({ start_date: el.value || null }) }))
   );
@@ -873,7 +886,10 @@ $('#addSeasonForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = $('#newSeasonName').value.trim();
   if (!name) return;
-  await api('/api/seasons', { method: 'POST', body: JSON.stringify({ name }) });
+  await api('/api/seasons', {
+    method: 'POST',
+    body: JSON.stringify({ name, league_name: $('#newSeasonLeague').value, division: $('#newSeasonDivision').value }),
+  });
   e.target.reset();
   await loadSeasonPicker();
   loadSeasons();

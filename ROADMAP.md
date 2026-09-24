@@ -19,7 +19,7 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 - [ ] **League position** — show the team's actual position in its league, which the app can't work out on its own because it only tracks this team's results.
   - [ ] **Manual entry first:** an optional text field the admin fills in for each season, shown as extra detail on the League Points card (e.g. "Current league position: 1"). It belongs to the season because the position only means something within that season's league.
   - [ ] **Automatic updates later:** pull the position from a FrameIQ+ supported league so it stays up to date without the admin editing it.
-- [ ] **League name and division** — an optional field on each season for the league and division the team plays in (e.g. "Tuesday League, Division 2"), set when creating or editing the season and shown on the public page. It is per season rather than a global setting because a team can move league or division between seasons.
+- [x] **League name and division** — an optional field on each season for the league and division the team plays in (e.g. "Tuesday League, Division 2"), set when creating or editing the season and shown on the public page. It is per season rather than a global setting because a team can move league or division between seasons.
 - [ ] **CSV export per season** — separate from the full JSON backup (which is for migrating hosts); this is for dropping a season into a spreadsheet or printing for a clubhouse noticeboard.
 
 ## Quality of life

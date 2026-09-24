@@ -22,8 +22,18 @@ async function api(path) {
 }
 
 // ---------- Season picker ----------
+// The season's league and division, shown under the Team Stats heading when either is set.
+function showLeague() {
+  const season = state.seasons.find((s) => s.id === state.currentSeasonId);
+  const text = season ? [season.league_name, season.division].filter(Boolean).join(' · ') : '';
+  const line = $('#leagueLine');
+  line.textContent = text;
+  line.hidden = !text;
+}
+
 $('#seasonSelect').addEventListener('change', async (e) => {
   state.currentSeasonId = Number(e.target.value);
+  showLeague();
   await Promise.all([loadKpis(), loadForm()]);
   refresh();
 });
@@ -37,6 +47,7 @@ async function loadSeasonPicker() {
   const active = state.seasons.find((s) => s.is_active) || state.seasons[state.seasons.length - 1];
   state.currentSeasonId = active ? active.id : null;
   if (state.currentSeasonId) sel.value = state.currentSeasonId;
+  showLeague();
 }
 
 function refresh() {

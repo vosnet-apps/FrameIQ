@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS seasons (
   start_date TEXT,
   end_date TEXT,
   is_active INTEGER NOT NULL DEFAULT 0,
-  sort_order INTEGER NOT NULL DEFAULT 0
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  league_name TEXT,
+  division TEXT
 );
 
 CREATE TABLE IF NOT EXISTS season_rosters (
@@ -151,6 +153,11 @@ for (const [col, ddl] of [
 const seasonColumns = db.prepare("PRAGMA table_info(seasons)").all().map((c) => c.name);
 if (!seasonColumns.includes('awards_published_at')) {
   db.exec('ALTER TABLE seasons ADD COLUMN awards_published_at INTEGER');
+}
+
+// Migrate older databases created before a season could record its league and division.
+for (const col of ['league_name', 'division']) {
+  if (!seasonColumns.includes(col)) db.exec(`ALTER TABLE seasons ADD COLUMN ${col} TEXT`);
 }
 
 // Migrate older databases created before allow_draws existed.

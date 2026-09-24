@@ -764,7 +764,8 @@ select.result-lost { background: var(--red-soft); color: var(--red-text); border
 .pill.sub { background: var(--amber-soft); color: var(--amber-text); }
 .pill.ex { background: var(--red-soft); color: var(--red-text); }
 
-#playersBody input[type=text] {
+#playersBody input[type=text],
+#seasonsBody input[type=text] {
   width: 100%;
   min-width: 90px;
   padding: 5px 7px;
@@ -776,7 +777,9 @@ select.result-lost { background: var(--red-soft); color: var(--red-text); border
 }
 
 #playersBody input[type=text]:hover,
-#playersBody input[type=text]:focus {
+#playersBody input[type=text]:focus,
+#seasonsBody input[type=text]:hover,
+#seasonsBody input[type=text]:focus {
   border-color: var(--border);
   background: var(--surface-2);
 }
@@ -902,6 +905,9 @@ input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 .badge { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 13px 6px 10px; font-size: 0.85rem; font-weight: 600; cursor: default; }
 .badge-icon { font-size: 1.05rem; }
 .badge-count { background: var(--crimson); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 0.75rem; font-weight: 700; }
+
+#seasonsBody input[type=text] { min-width: 150px; }
+.league-line { color: var(--muted); font-size: 0.9rem; margin: -6px 0 14px; }
 
 .player-badges { display: flex; gap: 6px; flex-wrap: wrap; }
 
