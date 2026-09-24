@@ -723,6 +723,9 @@ async function loadSeasons() {
         <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
+        <td class="actions">${s.awards_published_at
+          ? `<span class="pill">Published</span> <button class="secondary" data-publish="${s.id}" title="Work the awards out again from the current results">Recalculate</button> <button class="secondary" data-unpublish="${s.id}">Unpublish</button>`
+          : `<button data-publish="${s.id}">Publish awards</button>`}</td>
         <td class="actions"><button class="danger" data-delseason="${s.id}">Delete</button></td>
       </tr>`
     )
@@ -738,6 +741,21 @@ async function loadSeasons() {
     el.addEventListener('change', async () => {
       await api(`/api/seasons/${el.dataset.active}`, { method: 'PUT', body: JSON.stringify({ is_active: el.checked }) });
       await loadSeasonPicker();
+      loadSeasons();
+    })
+  );
+  body.querySelectorAll('[data-publish]').forEach((el) =>
+    el.addEventListener('click', async () => {
+      const again = el.textContent === 'Recalculate';
+      if (!confirm(again ? 'Recalculate the published awards from the current results? Winners may change.' : 'Publish the awards for this season? Everyone will be able to see them, and they show as badges on player profiles.')) return;
+      await api(`/api/seasons/${el.dataset.publish}/awards/publish`, { method: 'POST' });
+      loadSeasons();
+    })
+  );
+  body.querySelectorAll('[data-unpublish]').forEach((el) =>
+    el.addEventListener('click', async () => {
+      if (!confirm('Unpublish the awards for this season? They will be hidden again until you publish.')) return;
+      await api(`/api/seasons/${el.dataset.unpublish}/awards`, { method: 'DELETE' });
       loadSeasons();
     })
   );

@@ -73,6 +73,7 @@
           <button class="view-toggle-btn active" data-view="performance">Performance</button>
           <button class="view-toggle-btn" data-view="results">Match Results</button>
           <button class="view-toggle-btn" data-view="h2h">Head-to-Head</button>
+          <button class="view-toggle-btn" data-view="awards">Awards</button>
         </div>
         <label class="all-time-toggle" id="allTimeToggleWrap"><input type="checkbox" id="allTimeToggle" /> All-time (career)</label>
       </div>
@@ -137,6 +138,21 @@
         </table>
         </div>
         <p class="hint">All-time — every season, excluding BYE weeks.</p>
+      </div>
+
+      <div id="awardsView" hidden>
+        <div id="awardsNotice" class="awards-notice" hidden></div>
+        <h2 class="kpi-row-title" id="awardsTitle" hidden>Season awards</h2>
+        <div id="awardGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="featsTitle" hidden>Feats</h2>
+        <div id="featGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="teamTitle" hidden>Team</h2>
+        <div id="teamGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="milestonesTitle" hidden>Milestones reached this season</h2>
+        <ul id="milestoneList" class="milestone-list"></ul>
+        <h2 class="kpi-row-title" id="upcomingTitle" hidden>Coming up</h2>
+        <ul id="upcomingList" class="milestone-list"></ul>
+        <p class="hint">Season awards, feats and team awards are revealed once the season has finished. Milestones are live and count a player's whole career. Sharpshooter and Most Improved need at least 3 appearances.</p>
       </div>
     </section>
   </main>

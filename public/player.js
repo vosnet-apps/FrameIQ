@@ -41,6 +41,15 @@ function notFound() {
   if (data.player.left_date) badges.push(`<span class="pill ex">Left ${escapeHtml(data.player.left_date)}</span>`);
   $('#playerBadges').innerHTML = badges.join('');
 
+  const shelf = $('#badgeShelf');
+  shelf.hidden = !data.badges.length;
+  shelf.innerHTML = data.badges
+    .map((b) => {
+      const tip = `${b.description} ${b.seasons.filter(Boolean).join(', ')}`;
+      return `<div class="badge" title="${escapeHtml(tip)}"><span class="badge-icon">${b.icon}</span><span class="badge-name">${escapeHtml(b.title)}</span>${b.count > 1 ? `<span class="badge-count">×${b.count}</span>` : ''}</div>`;
+    })
+    .join('');
+
   const c = data.career;
   $('#kpiTotalPoints').textContent = c.total_points;
   $('#kpiTotalPointsSub').textContent = `${c.singles_won} singles, ${c.doubles_won} doubles won`;

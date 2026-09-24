@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { db } from './db.js';
+import { createAchievementEngine, loadContext } from './achievements.js';
 
 if (!process.env.ADMIN_PASSWORD) {
   console.error('ADMIN_PASSWORD is not set. Copy .env.example to .env and set a password before starting the server.');
@@ -294,8 +295,26 @@ app.get('/api/players/:id/profile', (req, res) => {
     [playerId]
   );
 
+  // Badges: published season awards (repeatable, so counted) plus career milestones.
+  const ctx = loadContext({ all, get }, settings);
+  const seasonNames = new Map(ctx.seasons.map((x) => [x.id, x.name]));
+  const badgeMap = new Map();
+  const addBadge = (id, seasonId) => {
+    const d = achievements.describe(id);
+    if (!d) return;
+    const b = badgeMap.get(id) || { ...d, count: 0, seasons: [] };
+    b.count += 1;
+    b.seasons.push(seasonNames.get(seasonId));
+    badgeMap.set(id, b);
+  };
+  for (const r of all('SELECT a.achievement_id, a.season_id FROM season_awards a JOIN seasons s ON s.id = a.season_id WHERE a.player_id = ? ORDER BY s.sort_order', [playerId])) addBadge(r.achievement_id, r.season_id);
+  for (const r of achievements.evaluateCareer(ctx).filter((m) => m.player_id === playerId)) addBadge(r.achievement_id, r.season_id);
+  const order = new Map(achievements.definitions.map((d, i) => [d.id, i]));
+  const badges = [...badgeMap.values()].sort((a, b) => order.get(a.id) - order.get(b.id));
+
   res.json({
     player,
+    badges,
     career: shapePlayerStats(careerRow || {}),
     seasons: seasonRows.map((r) => ({ season_id: r.season_id, season_name: r.season_name, ...shapePlayerStats(r) })),
     matches: matchRows.map((r) => ({
@@ -744,10 +763,95 @@ app.get('/api/stats/head-to-head', (req, res) => {
   });
 });
 
+// ---------- Achievements: season awards & career milestones ----------
+// Season awards are snapshotted into season_awards when an admin publishes them, and are
+// hidden from everyone else until then. Career milestones are always live.
+const achievements = createAchievementEngine();
+
+const seasonOr404 = (req, res) => {
+  const season = get('SELECT * FROM seasons WHERE id = ?', [Number(req.params.id ?? req.query.season_id)]);
+  if (!season) res.status(404).json({ error: 'season not found' });
+  return season;
+};
+
+function snapshotSeasonAwards(seasonId) {
+  const results = achievements.evaluateSeason(loadContext({ all, get }, getSettings()), seasonId);
+  db.exec('BEGIN');
+  try {
+    run('DELETE FROM season_awards WHERE season_id = ?', [seasonId]);
+    for (const r of results) {
+      run('INSERT INTO season_awards (season_id, achievement_id, player_id, value) VALUES (?, ?, ?, ?)', [seasonId, r.achievement_id, r.player_id, r.value]);
+    }
+    run('UPDATE seasons SET awards_published_at = ? WHERE id = ?', [Date.now(), seasonId]);
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+  return results.length;
+}
+
+// Groups flat award rows into one entry per award, in definition order.
+function groupAwards(rows) {
+  return achievements.definitions
+    .filter((d) => d.kind === 'season')
+    .map((d) => {
+      const winners = rows.filter((r) => r.achievement_id === d.id);
+      return winners.length ? { ...d, value: winners[0].value, winners: winners.map((w) => ({ player_id: w.player_id, name: w.name, value: w.value })) } : null;
+    })
+    .filter(Boolean);
+}
+
+app.post('/api/seasons/:id/awards/publish', requireAdmin, (req, res) => {
+  const season = seasonOr404(req, res);
+  if (!season) return;
+  res.json({ ok: true, awarded: snapshotSeasonAwards(season.id) });
+});
+
+app.delete('/api/seasons/:id/awards', requireAdmin, (req, res) => {
+  const season = seasonOr404(req, res);
+  if (!season) return;
+  run('DELETE FROM season_awards WHERE season_id = ?', [season.id]);
+  run('UPDATE seasons SET awards_published_at = NULL WHERE id = ?', [season.id]);
+  res.status(204).end();
+});
+
+app.get('/api/stats/awards', (req, res) => {
+  const season = seasonOr404(req, res);
+  if (!season) return;
+  const isAdmin = !!(req.session && req.session.isAdmin);
+  const published = !!season.awards_published_at;
+  const ctx = loadContext({ all, get }, getSettings());
+  const describe = (r) => ({ ...achievements.describe(r.achievement_id), player_id: r.player_id, name: r.name });
+
+  let awardRows = [];
+  if (published) {
+    awardRows = all(
+      `SELECT a.achievement_id, a.player_id, p.name, a.value
+       FROM season_awards a LEFT JOIN players p ON p.id = a.player_id
+       WHERE a.season_id = ? ORDER BY p.name COLLATE NOCASE, a.id`,
+      [season.id]
+    );
+  } else if (isAdmin) {
+    awardRows = achievements.evaluateSeason(ctx, season.id); // preview, visible only to an admin
+  }
+
+  res.json({
+    season: { id: season.id, name: season.name },
+    published,
+    preview: !published && isAdmin,
+    awards: groupAwards(awardRows),
+    milestones: achievements.evaluateCareer(ctx).filter((m) => m.season_id === season.id).map(describe),
+    upcoming: achievements.upcoming(ctx, season.id).map((u) => ({ ...describe(u), remaining: u.remaining })),
+  });
+});
+
 // ---------- Backup / restore ----------
 // Used to move data between environments (e.g. local -> a fresh host), since the
 // database file itself typically isn't something you can just copy across hosts.
-const BACKUP_TABLES = ['players', 'seasons', 'season_rosters', 'match_weeks', 'match_entries'];
+const BACKUP_TABLES = ['players', 'seasons', 'season_rosters', 'match_weeks', 'match_entries', 'season_awards'];
+// Backups made before a table existed don't have it, and that's fine.
+const OPTIONAL_BACKUP_TABLES = new Set(['season_awards']);
 
 app.get('/api/admin/export', requireAdmin, (req, res) => {
   const dump = {};
@@ -765,6 +869,7 @@ app.post('/api/admin/import', requireAdmin, (req, res) => {
   }
   const dump = req.body;
   for (const table of BACKUP_TABLES) {
+    if (dump[table] === undefined && OPTIONAL_BACKUP_TABLES.has(table)) dump[table] = [];
     if (!Array.isArray(dump[table])) {
       return res.status(400).json({ error: `Backup file is missing or has an invalid "${table}" section.` });
     }

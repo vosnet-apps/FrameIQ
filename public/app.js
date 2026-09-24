@@ -39,6 +39,7 @@ async function loadSeasonPicker() {
 function refresh() {
   if (state.statsView === 'performance') loadStats();
   else if (state.statsView === 'results') loadResults();
+  else if (state.statsView === 'awards') loadAwards();
   else loadH2H();
 }
 
@@ -51,6 +52,7 @@ $$('.view-toggle-btn').forEach((btn) => {
     $('#performanceView').hidden = state.statsView !== 'performance';
     $('#resultsView').hidden = state.statsView !== 'results';
     $('#h2hView').hidden = state.statsView !== 'h2h';
+    $('#awardsView').hidden = state.statsView !== 'awards';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     refresh();
   });
@@ -275,6 +277,58 @@ $$('#h2hTable th[data-key]').forEach((th) => {
     loadH2H();
   });
 });
+
+// ---------- Awards & milestones (season-scoped) ----------
+async function loadAwards() {
+  if (!state.currentSeasonId) return;
+  const data = await api(`/api/stats/awards?season_id=${state.currentSeasonId}`);
+  renderAwards(data);
+}
+
+function awardCardHtml(a) {
+  const link = (w) => `<a class="player-link" href="/player.html?id=${w.player_id}">${escapeHtml(w.name)}</a>`;
+  // Feats can have many winners each with their own detail; awards share one value.
+  const body = a.group === 'team'
+    ? `<div class="award-winners feat-list">${a.winners.map((w) => `<div>${escapeHtml(w.value || '')}</div>`).join('')}</div>`
+    : a.group === 'feat'
+    ? `<div class="award-winners feat-list">${a.winners.map((w) => `<div>${link(w)}</div>`).join('')}</div>`
+    : `<div class="award-winners">${a.winners.map(link).join(', ')}</div><div class="award-value">${escapeHtml(a.winners[0].value || '')}</div>`;
+  return `<div class="award-card">
+    <div class="award-title"><span class="award-icon">${a.icon}</span>${escapeHtml(a.title)}</div>
+    ${body}
+    <div class="award-blurb">${escapeHtml(a.description)}</div>
+  </div>`;
+}
+
+function renderAwards(data) {
+  const notice = $('#awardsNotice');
+  notice.hidden = data.published && !data.preview;
+  if (data.preview) {
+    notice.textContent = 'Preview — only you can see this. Publish these under Seasons in the admin area when the season is over.';
+  } else if (!data.published) {
+    notice.textContent = '🏆 Season awards will be revealed when the season is over.';
+  }
+
+  const show = data.published || data.preview;
+  const awards = show ? data.awards.filter((a) => a.group === 'award') : [];
+  const feats = show ? data.awards.filter((a) => a.group === 'feat') : [];
+  const teamAwards = show ? data.awards.filter((a) => a.group === 'team') : [];
+  $('#awardsTitle').hidden = !awards.length;
+  $('#awardGrid').innerHTML = awards.map(awardCardHtml).join('');
+  $('#featsTitle').hidden = !feats.length;
+  $('#featGrid').innerHTML = feats.map(awardCardHtml).join('');
+  $('#teamTitle').hidden = !teamAwards.length;
+  $('#teamGrid').innerHTML = teamAwards.map(awardCardHtml).join('');
+
+  const listHtml = (items, suffix) =>
+    items
+      .map((m) => `<li><span class="award-icon">${m.icon}</span>${m.player_id == null ? '<strong>Team</strong>' : `<a class="player-link" href="/player.html?id=${m.player_id}">${escapeHtml(m.name)}</a>`} <span>${escapeHtml(m.title)}${suffix ? suffix(m) : ''}</span></li>`)
+      .join('');
+  $('#milestonesTitle').hidden = !data.milestones.length;
+  $('#milestoneList').innerHTML = listHtml(data.milestones);
+  $('#upcomingTitle').hidden = !data.upcoming.length;
+  $('#upcomingList').innerHTML = listHtml(data.upcoming, (m) => ` — ${m.remaining} to go`);
+}
 
 // ---------- Init ----------
 (async function init() {

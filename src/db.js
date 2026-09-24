@@ -95,6 +95,19 @@ CREATE TABLE IF NOT EXISTS server_secrets (
   session_secret TEXT NOT NULL
 );
 
+-- Snapshot of a season's awards, written when the admin publishes them so the announced
+-- result stays fixed. One row per winner (ties share an award); player_id is NULL for
+-- team awards, which can have several rows (e.g. one per whitewash). Career milestones are not
+-- stored - they're worked out live.
+CREATE TABLE IF NOT EXISTS season_awards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  achievement_id TEXT NOT NULL,
+  player_id INTEGER REFERENCES players(id) ON DELETE CASCADE,
+  value TEXT,
+  UNIQUE(season_id, achievement_id, player_id)
+);
+
 -- Single-row table (id is always 1) holding app-wide branding. Starts with the same
 -- crimson used in styles.css, so switching this on changes nothing until an admin picks
 -- a different color.
@@ -132,6 +145,12 @@ for (const [col, ddl] of [
   if (!appSettingsColumns.includes(col)) {
     db.exec(`ALTER TABLE app_settings ADD COLUMN ${col} ${ddl}`);
   }
+}
+
+// Migrate older databases created before season awards could be published.
+const seasonColumns = db.prepare("PRAGMA table_info(seasons)").all().map((c) => c.name);
+if (!seasonColumns.includes('awards_published_at')) {
+  db.exec('ALTER TABLE seasons ADD COLUMN awards_published_at INTEGER');
 }
 
 // Migrate older databases created before allow_draws existed.
