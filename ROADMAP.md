@@ -16,6 +16,10 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 - [ ] **Form against head-to-head opponents** — the same W/L "form" chips used on player rows, but for the team's last few results against each opponent, added as a column in the Head-to-Head table.
 - [ ] **Record frame sets** — today a match stores only the overall score plus a won/lost result per player for singles and doubles. Add the ability to record the individual frames (or sets of frames) that make up a match, so results can be broken down frame by frame rather than as a single win/loss.
 - [x] **Season awards / milestones** — season awards, feats and team awards (published by the admin at season end), plus live career milestones and profile badges, all derived from existing match data.
+- [ ] **League position** — show the team's actual position in its league, which the app can't work out on its own because it only tracks this team's results.
+  - [ ] **Manual entry first:** an optional text field the admin fills in for each season, shown as extra detail on the League Points card (e.g. "Current league position: 1"). It belongs to the season because the position only means something within that season's league.
+  - [ ] **Automatic updates later:** pull the position from a FrameIQ+ supported league so it stays up to date without the admin editing it.
+- [ ] **League name and division** — an optional field on each season for the league and division the team plays in (e.g. "Tuesday League, Division 2"), set when creating or editing the season and shown on the public page. It is per season rather than a global setting because a team can move league or division between seasons.
 - [ ] **CSV export per season** — separate from the full JSON backup (which is for migrating hosts); this is for dropping a season into a spreadsheet or printing for a clubhouse noticeboard.
 
 ## Quality of life
