@@ -302,14 +302,10 @@ function awardCardHtml(a) {
 
 function renderAwards(data) {
   const notice = $('#awardsNotice');
-  notice.hidden = data.published && !data.preview;
-  if (data.preview) {
-    notice.textContent = 'Preview — only you can see this. Publish these under Seasons in the admin area when the season is over.';
-  } else if (!data.published) {
-    notice.textContent = '🏆 Season awards will be revealed when the season is over.';
-  }
+  notice.hidden = data.published;
+  notice.textContent = '🏆 Season awards will be revealed when the season is over.';
 
-  const show = data.published || data.preview;
+  const show = data.published;
   const awards = show ? data.awards.filter((a) => a.group === 'award') : [];
   const feats = show ? data.awards.filter((a) => a.group === 'feat') : [];
   const teamAwards = show ? data.awards.filter((a) => a.group === 'team') : [];
@@ -322,7 +318,7 @@ function renderAwards(data) {
 
   const listHtml = (items, suffix) =>
     items
-      .map((m) => `<li><span class="award-icon">${m.icon}</span>${m.player_id == null ? '<strong>Team</strong>' : `<a class="player-link" href="/player.html?id=${m.player_id}">${escapeHtml(m.name)}</a>`} <span>${escapeHtml(m.title)}${suffix ? suffix(m) : ''}</span></li>`)
+      .map((m) => `<li title="${escapeHtml(`${m.description} ${suffix ? '' : m.season_name + '.'}`.trim())}"><span class="award-icon">${m.icon}</span>${m.player_id == null ? '<strong>Team</strong>' : `<a class="player-link" href="/player.html?id=${m.player_id}">${escapeHtml(m.name)}</a>`} <span>${escapeHtml(m.title)}${suffix ? suffix(m) : ''}</span></li>`)
       .join('');
   $('#milestonesTitle').hidden = !data.milestones.length;
   $('#milestoneList').innerHTML = listHtml(data.milestones);

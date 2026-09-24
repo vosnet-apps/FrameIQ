@@ -62,7 +62,7 @@ The public **Awards** tab and each player's profile page are worked out from the
 - **Career milestones** — First Blood, Half Century, Century Club and Double Century (1st, 50th, 100th and 200th career win), Regular, Veteran and Club Legend (25th, 50th and 100th appearance), plus team milestones for 50 and 100 match wins and 100 matches played. These show as soon as they happen, along with a "Coming up" list of who is close to the next one.
 - **Profile badges** — every award and milestone a player has earned appears as a badge on their profile. Winning the same award again adds a count (×2, ×3…).
 
-Season awards, feats and team awards stay hidden until you reveal them: at the end of a season, open **Admin → Seasons** and click **Publish awards**. That freezes the announced result; **Recalculate** re-runs it if a result is corrected later and **Unpublish** hides it again. Until then only you see a preview on the Awards tab. Career milestones need no publishing.
+Season awards, feats and team awards stay hidden until you reveal them: at the end of a season, open **Admin → Seasons** and click **Publish awards**. That freezes the announced result; **Recalculate** re-runs it if a result is corrected later and **Unpublish** hides it again. Publishing is only possible once the season is no longer active. Until then only you see a preview, under **Admin → Stats → Awards**; the public Awards tab just says they are coming. Career milestones need no publishing.
 
 Awards are defined in `src/achievements.js` as plain objects, so thresholds can be tuned, awards switched off or new ones added without touching the rest of the app.
 

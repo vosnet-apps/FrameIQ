@@ -90,6 +90,7 @@
           <button class="view-toggle-btn active" data-view="performance">Performance</button>
           <button class="view-toggle-btn" data-view="results">Match Results</button>
           <button class="view-toggle-btn" data-view="h2h">Head-to-Head</button>
+          <button class="view-toggle-btn" data-view="awards">Awards</button>
         </div>
         <label class="all-time-toggle" id="allTimeToggleWrap"><input type="checkbox" id="allTimeToggle" /> All-time (career)</label>
       </div>
@@ -133,6 +134,21 @@
         </table>
         </div>
         <p id="resultsEmpty" class="hint" hidden>No match results recorded for this season.</p>
+      </div>
+
+      <div id="awardsView" hidden>
+        <div id="awardsNotice" class="awards-notice" hidden></div>
+        <h2 class="kpi-row-title" id="awardsTitle" hidden>Season awards</h2>
+        <div id="awardGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="featsTitle" hidden>Feats</h2>
+        <div id="featGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="teamTitle" hidden>Team</h2>
+        <div id="teamGrid" class="award-grid"></div>
+        <h2 class="kpi-row-title" id="milestonesTitle" hidden>Milestones reached this season</h2>
+        <ul id="milestoneList" class="milestone-list"></ul>
+        <h2 class="kpi-row-title" id="upcomingTitle" hidden>Coming up</h2>
+        <ul id="upcomingList" class="milestone-list"></ul>
+        <p class="hint">Only you see the preview. Publish a season's awards under Seasons once the season is no longer active.</p>
       </div>
 
       <div id="h2hView" hidden>

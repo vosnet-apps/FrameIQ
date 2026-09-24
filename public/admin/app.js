@@ -129,6 +129,7 @@ function refreshCurrentTab() {
   if (tab === 'stats') {
     if (state.statsView === 'performance') loadStats();
     else if (state.statsView === 'results') loadResults();
+    else if (state.statsView === 'awards') loadAwards();
     else loadH2H();
   }
   if (tab === 'matches') loadWeeks();
@@ -165,9 +166,11 @@ $$('.view-toggle-btn').forEach((btn) => {
     $('#performanceView').hidden = state.statsView !== 'performance';
     $('#resultsView').hidden = state.statsView !== 'results';
     $('#h2hView').hidden = state.statsView !== 'h2h';
+    $('#awardsView').hidden = state.statsView !== 'awards';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     if (state.statsView === 'performance') loadStats();
     else if (state.statsView === 'results') loadResults();
+    else if (state.statsView === 'awards') loadAwards();
     else loadH2H();
   });
 });
@@ -338,6 +341,53 @@ $$('#statsTable th[data-key]').forEach((th) => {
     loadStats();
   });
 });
+
+// ---------- Awards & milestones (preview of unpublished awards, season-scoped) ----------
+async function loadAwards() {
+  if (!state.currentSeasonId) return;
+  renderAwards(await api(`/api/stats/awards?season_id=${state.currentSeasonId}&preview=1`));
+}
+
+function awardCardHtml(a) {
+  const link = (w) => `<a class="player-link" href="/player.html?id=${w.player_id}" target="_blank" rel="noopener">${escapeHtml(w.name)}</a>`;
+  const body = a.group === 'team'
+    ? `<div class="award-winners feat-list">${a.winners.map((w) => `<div>${escapeHtml(w.value || '')}</div>`).join('')}</div>`
+    : a.group === 'feat'
+    ? `<div class="award-winners feat-list">${a.winners.map((w) => `<div>${link(w)}</div>`).join('')}</div>`
+    : `<div class="award-winners">${a.winners.map(link).join(', ')}</div><div class="award-value">${escapeHtml(a.winners[0].value || '')}</div>`;
+  return `<div class="award-card">
+    <div class="award-title"><span class="award-icon">${a.icon}</span>${escapeHtml(a.title)}</div>
+    ${body}
+    <div class="award-blurb">${escapeHtml(a.description)}</div>
+  </div>`;
+}
+
+function renderAwards(data) {
+  const notice = $('#awardsNotice');
+  notice.hidden = false;
+  notice.textContent = data.published
+    ? 'These awards are published and visible to everyone.'
+    : 'Preview — only you can see this. Nothing is public until you publish the awards under Seasons.';
+
+  const awards = data.awards.filter((a) => a.group === 'award');
+  const feats = data.awards.filter((a) => a.group === 'feat');
+  const teamAwards = data.awards.filter((a) => a.group === 'team');
+  $('#awardsTitle').hidden = !awards.length;
+  $('#awardGrid').innerHTML = awards.map(awardCardHtml).join('');
+  $('#featsTitle').hidden = !feats.length;
+  $('#featGrid').innerHTML = feats.map(awardCardHtml).join('');
+  $('#teamTitle').hidden = !teamAwards.length;
+  $('#teamGrid').innerHTML = teamAwards.map(awardCardHtml).join('');
+
+  const listHtml = (items, suffix) =>
+    items
+      .map((m) => `<li title="${escapeHtml(`${m.description} ${suffix ? '' : m.season_name + '.'}`.trim())}"><span class="award-icon">${m.icon}</span>${m.player_id == null ? '<strong>Team</strong>' : `<a class="player-link" href="/player.html?id=${m.player_id}" target="_blank" rel="noopener">${escapeHtml(m.name)}</a>`} <span>${escapeHtml(m.title)}${suffix ? suffix(m) : ''}</span></li>`)
+      .join('');
+  $('#milestonesTitle').hidden = !data.milestones.length;
+  $('#milestoneList').innerHTML = listHtml(data.milestones);
+  $('#upcomingTitle').hidden = !data.upcoming.length;
+  $('#upcomingList').innerHTML = listHtml(data.upcoming, (m) => ` — ${m.remaining} to go`);
+}
 
 // ---------- Head-to-head (all-time, not season-scoped) ----------
 async function loadH2H() {
@@ -713,6 +763,8 @@ $('#addPlayerForm').addEventListener('submit', async (e) => {
 });
 
 // ---------- Seasons ----------
+const ACTIVE_SEASON_TIP = 'Awards can be published once the season is no longer active.';
+
 async function loadSeasons() {
   const seasons = await api('/api/seasons');
   const body = $('#seasonsBody');
@@ -724,8 +776,8 @@ async function loadSeasons() {
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
         <td class="actions">${s.awards_published_at
-          ? `<span class="pill">Published</span> <button class="secondary" data-publish="${s.id}" title="Work the awards out again from the current results">Recalculate</button> <button class="secondary" data-unpublish="${s.id}">Unpublish</button>`
-          : `<button data-publish="${s.id}">Publish awards</button>`}</td>
+          ? `<span class="pill">Published</span> <button class="secondary" data-publish="${s.id}" ${s.is_active ? 'disabled' : ''} title="${s.is_active ? ACTIVE_SEASON_TIP : 'Work the awards out again from the current results'}">Recalculate</button> <button class="secondary" data-unpublish="${s.id}">Unpublish</button>`
+          : `<button data-publish="${s.id}" ${s.is_active ? 'disabled' : ''} title="${s.is_active ? ACTIVE_SEASON_TIP : 'Reveal this season\'s awards to everyone'}">Publish awards</button>`}</td>
         <td class="actions"><button class="danger" data-delseason="${s.id}">Delete</button></td>
       </tr>`
     )

@@ -805,6 +805,7 @@ function groupAwards(rows) {
 app.post('/api/seasons/:id/awards/publish', requireAdmin, (req, res) => {
   const season = seasonOr404(req, res);
   if (!season) return;
+  if (season.is_active) return res.status(400).json({ error: 'Awards can be published once the season is no longer active.' });
   res.json({ ok: true, awarded: snapshotSeasonAwards(season.id) });
 });
 
@@ -819,10 +820,12 @@ app.delete('/api/seasons/:id/awards', requireAdmin, (req, res) => {
 app.get('/api/stats/awards', (req, res) => {
   const season = seasonOr404(req, res);
   if (!season) return;
-  const isAdmin = !!(req.session && req.session.isAdmin);
+  // The unpublished preview is only for the admin Stats page, which asks for it explicitly;
+  // the public site never shows it, even to a logged-in admin.
+  const wantsPreview = req.query.preview === '1' && !!(req.session && req.session.isAdmin);
   const published = !!season.awards_published_at;
   const ctx = loadContext({ all, get }, getSettings());
-  const describe = (r) => ({ ...achievements.describe(r.achievement_id), player_id: r.player_id, name: r.name });
+  const describe = (r) => ({ ...achievements.describe(r.achievement_id), player_id: r.player_id, name: r.name, season_name: season.name });
 
   let awardRows = [];
   if (published) {
@@ -832,14 +835,14 @@ app.get('/api/stats/awards', (req, res) => {
        WHERE a.season_id = ? ORDER BY p.name COLLATE NOCASE, a.id`,
       [season.id]
     );
-  } else if (isAdmin) {
-    awardRows = achievements.evaluateSeason(ctx, season.id); // preview, visible only to an admin
+  } else if (wantsPreview) {
+    awardRows = achievements.evaluateSeason(ctx, season.id);
   }
 
   res.json({
     season: { id: season.id, name: season.name },
     published,
-    preview: !published && isAdmin,
+    preview: !published && wantsPreview,
     awards: groupAwards(awardRows),
     milestones: achievements.evaluateCareer(ctx).filter((m) => m.season_id === season.id).map(describe),
     upcoming: achievements.upcoming(ctx, season.id).map((u) => ({ ...describe(u), remaining: u.remaining })),
