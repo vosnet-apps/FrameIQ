@@ -6,6 +6,9 @@ const state = {
   statsSortDir: 'desc',
   selectedWeekId: null,
   statsView: 'performance',
+  resultsWeeks: [],
+  resultsSortKey: 'week',
+  resultsSortDir: 'asc',
   formMap: {},
   rosterSortKey: null,
   rosterSortDir: 'asc',
@@ -260,43 +263,88 @@ $('#allTimeToggle').addEventListener('change', () => {
   loadStats();
 });
 
+// ---------- Results / fixtures ----------
+// A week with no score yet is a fixture: "Upcoming", or "Awaiting result" once its date has passed.
+function fixtureStatus(w) {
+  if (w.is_bye) return { label: 'BYE', cls: 'result-bye', rank: 3 };
+  if (w.score_for != null && w.score_against != null) {
+    if (w.score_for > w.score_against) return { label: 'Win', cls: 'result-won', rank: 0 };
+    if (w.score_for < w.score_against) return { label: 'Loss', cls: 'result-lost', rank: 2 };
+    return { label: 'Draw', cls: '', rank: 1 };
+  }
+  // Played (players' results entered) but the match score never was: not a fixture.
+  if (w.entry_count > 0) return { label: 'No score', cls: '', rank: 4 };
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(w.match_date || '') && w.match_date < today) return { label: 'Awaiting result', cls: 'result-awaiting', rank: 5 };
+  return { label: 'Upcoming', cls: 'result-upcoming', rank: 6 };
+}
+
+const RESULTS_SORT_VALUE = {
+  week: (w) => w.week_number,
+  date: (w) => w.match_date || null,
+  venue: (w) => (w.venue ? w.venue.toLowerCase() : null),
+  opponent: (w) => (w.opponent ? w.opponent.toLowerCase() : null),
+  score: (w) => (w.score_for != null && w.score_against != null ? w.score_for : null),
+  result: (w) => fixtureStatus(w).rank,
+};
+
 async function loadResults() {
   if (!state.currentSeasonId) return;
   const weeks = await api(`/api/seasons/${state.currentSeasonId}/weeks`);
-  const played = weeks.filter((w) => !w.is_aggregate).sort((a, b) => a.week_number - b.week_number);
+  state.resultsWeeks = weeks.filter((w) => !w.is_aggregate);
+  renderResults();
+}
+
+function renderResults() {
+  const dir = state.resultsSortDir === 'asc' ? 1 : -1;
+  const value = RESULTS_SORT_VALUE[state.resultsSortKey];
+  // Blank values always sink to the bottom, whichever way the column is sorted.
+  const rows = [...state.resultsWeeks].sort((a, b) => {
+    const av = value(a);
+    const bv = value(b);
+    if (av == null && bv == null) return a.week_number - b.week_number;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+    return cmp * dir || a.week_number - b.week_number;
+  });
+
   const tbody = $('#resultsTable tbody');
   const empty = $('#resultsEmpty');
-
-  if (!played.length) {
-    tbody.innerHTML = '';
-    empty.hidden = false;
-    return;
-  }
-  empty.hidden = true;
-
-  tbody.innerHTML = played
+  empty.hidden = rows.length > 0;
+  tbody.innerHTML = rows
     .map((w) => {
-      let result = '—';
-      if (w.is_bye) {
-        result = 'BYE';
-      } else if (w.score_for != null && w.score_against != null) {
-        if (w.score_for > w.score_against) result = 'Win';
-        else if (w.score_for < w.score_against) result = 'Loss';
-        else result = 'Draw';
-      }
+      const status = fixtureStatus(w);
       const score = w.score_for != null && w.score_against != null ? `${w.score_for}-${w.score_against}` : '—';
-      const resultClass = result === 'Win' ? 'result-won' : result === 'Loss' ? 'result-lost' : result === 'BYE' ? 'result-bye' : '';
       return `<tr>
         <td>Week ${w.week_number}</td>
         <td>${escapeHtml(w.match_date || '—')}</td>
         <td>${escapeHtml(w.venue || '—')}</td>
         <td>${escapeHtml(w.opponent || '—')}</td>
         <td>${score}</td>
-        <td><span class="result-pill ${resultClass}">${result}</span></td>
+        <td><span class="result-pill ${status.cls}">${status.label}</span></td>
       </tr>`;
     })
     .join('');
+
+  $$('#resultsTable th[data-key]').forEach((th) => {
+    th.classList.toggle('sorted', th.dataset.key === state.resultsSortKey);
+    th.classList.toggle('asc', th.dataset.key === state.resultsSortKey && state.resultsSortDir === 'asc');
+  });
 }
+
+$$('#resultsTable th[data-key]').forEach((th) => {
+  th.addEventListener('click', () => {
+    if (state.resultsSortKey === th.dataset.key) {
+      state.resultsSortDir = state.resultsSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.resultsSortKey = th.dataset.key;
+      state.resultsSortDir = 'asc';
+    }
+    renderResults();
+  });
+});
 
 function renderStats(rows) {
   const sorted = [...rows].sort((a, b) => {

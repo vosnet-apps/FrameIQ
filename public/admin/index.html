@@ -88,7 +88,7 @@
       <div class="panel-header">
         <div class="view-toggle">
           <button class="view-toggle-btn active" data-view="performance">Performance</button>
-          <button class="view-toggle-btn" data-view="results">Match Results</button>
+          <button class="view-toggle-btn" data-view="results">Results / Fixtures</button>
           <button class="view-toggle-btn" data-view="h2h">Head-to-Head</button>
           <button class="view-toggle-btn" data-view="awards">Awards</button>
         </div>
@@ -119,21 +119,21 @@
 
       <div id="resultsView" hidden>
         <div class="table-scroll">
-        <table id="resultsTable" class="data-table">
+        <table id="resultsTable" class="data-table sortable">
           <thead>
             <tr>
-              <th>Week</th>
-              <th>Date</th>
-              <th>Venue</th>
-              <th>Opponent</th>
-              <th>Score</th>
-              <th>Result</th>
+              <th data-key="week">Week</th>
+              <th data-key="date">Date</th>
+              <th data-key="venue">Venue</th>
+              <th data-key="opponent">Opponent</th>
+              <th data-key="score">Score</th>
+              <th data-key="result">Result</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
         </div>
-        <p id="resultsEmpty" class="hint" hidden>No match results recorded for this season.</p>
+        <p id="resultsEmpty" class="hint" hidden>No fixtures or results recorded for this season yet.</p>
       </div>
 
       <div id="awardsView" hidden>

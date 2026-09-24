@@ -47,7 +47,7 @@ Open http://localhost:4173 in your browser. Leave the terminal window open while
 
 ## Public site vs admin
 
-- **`/`** — public, no login required. Pick a season, then switch between Performance (per-player stats and recent form), Match Results, Head-to-Head (all-time record against each opponent) and Awards. Click a player's name for their profile: career totals, season-by-season stats, match history and badges. A sun/moon button switches between light and dark themes (remembered per visitor). This is what you'd share with players.
+- **`/`** — public, no login required. Pick a season, then switch between Performance (per-player stats and recent form), Results / Fixtures (played results plus upcoming weeks you have added without a score, sortable by any column), Head-to-Head (all-time record against each opponent) and Awards. Click a player's name for their profile: career totals, season-by-season stats, match history and badges. A sun/moon button switches between light and dark themes (remembered per visitor). This is what you'd share with players.
 - **`/admin`** — everything else (Match Entry, Roster, Players, Seasons management, Settings), gated behind the password in `.env`. Log in at `/admin/login`.
 
 If you put this online, make sure `.env` is never committed or exposed — `.gitignore` already excludes it. Sessions are stored in the database, so admin logins survive restarts and redeploys. Login is rate-limited (5 wrong passwords per IP locks it out for 15 minutes), cookies are HttpOnly + SameSite=Lax (Secure over HTTPS), cross-origin writes are rejected, and pages are served with a Content-Security-Policy and other security headers. `SESSION_SECRET` is optional — if unset, a random one is generated and kept in the database.
