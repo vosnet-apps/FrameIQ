@@ -15,6 +15,10 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 - [x] **Head-to-head opponent records** — `match_weeks.opponent` is already free text; aggregate by it for a "record vs. Kingsway A: 3W 1L" view. Pairs naturally with player profiles.
 - [ ] **Form against head-to-head opponents** — the same W/L "form" chips used on player rows, but for the team's last few results against each opponent, added as a column in the Head-to-Head table.
 - [ ] **Record frame sets** — today a match stores only the overall score plus a won/lost result per player for singles and doubles. Add the ability to record the individual frames (or sets of frames) that make up a match, so results can be broken down frame by frame rather than as a single win/loss.
+- [ ] **Doubles partnerships** — record who played with whom in each week's doubles. In Match Entry, each player who played doubles gets an optional pair number (Double 1, 2 or 3); players sharing a number that week were partners. This is one extra optional field on each player's weekly entry, so existing weeks and results are unaffected.
+  - [ ] **Partnership records:** a pairing's combined record (e.g. "Scott & Rob: 5W 2L") on player profiles, plus a pairings view on the Stats page.
+  - [ ] **Checks on entry:** exactly two players per pair number, and both partners must have the same doubles result.
+  - [ ] **Pairing awards:** a "best partnership" season award, using the existing awards engine.
 - [x] **Season awards / milestones** — season awards, feats and team awards (published by the admin at season end), plus live career milestones and profile badges, all derived from existing match data.
 - [ ] **League position** — show the team's actual position in its league, which the app can't work out on its own because it only tracks this team's results.
   - [ ] **Manual entry first:** an optional text field the admin fills in for each season, shown as extra detail on the League Points card (e.g. "Current league position: 1"). It belongs to the season because the position only means something within that season's league.
