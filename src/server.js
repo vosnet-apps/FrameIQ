@@ -286,7 +286,13 @@ app.get('/api/players/:id/profile', (req, res) => {
     `SELECT
        w.season_id, s.name AS season_name, s.sort_order,
        w.week_number, w.match_date, w.opponent, w.venue, w.score_for, w.score_against, w.is_bye,
-       e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost
+       e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost,
+       (SELECT x.player_id FROM match_entries x
+         WHERE x.week_id = e.week_id AND x.doubles_pair = e.doubles_pair AND x.player_id != e.player_id
+           AND (SELECT COUNT(*) FROM match_entries y WHERE y.week_id = e.week_id AND y.doubles_pair = e.doubles_pair) = 2) AS partner_id,
+       (SELECT p2.name FROM match_entries x JOIN players p2 ON p2.id = x.player_id
+         WHERE x.week_id = e.week_id AND x.doubles_pair = e.doubles_pair AND x.player_id != e.player_id
+           AND (SELECT COUNT(*) FROM match_entries y WHERE y.week_id = e.week_id AND y.doubles_pair = e.doubles_pair) = 2) AS partner_name
      FROM match_entries e
      JOIN match_weeks w ON w.id = e.week_id
      JOIN seasons s ON s.id = w.season_id
@@ -294,6 +300,14 @@ app.get('/api/players/:id/profile', (req, res) => {
      ORDER BY s.sort_order DESC, w.week_number DESC`,
     [playerId]
   );
+
+  // Doubles partners across every season, most played first.
+  const partners = partnershipRows({ playerId })
+    .map((r) => {
+      const other = r.a_id === playerId ? { player_id: r.b_id, name: r.b_name } : { player_id: r.a_id, name: r.a_name };
+      return { ...other, played: r.played, wins: r.wins, losses: r.losses, win_pct: r.played > 0 ? r.wins / r.played : null };
+    })
+    .sort((a, b) => b.played - a.played || b.wins - a.wins || a.name.localeCompare(b.name));
 
   // Badges: published season awards (repeatable, so counted) plus career milestones.
   const ctx = loadContext({ all, get }, settings);
@@ -315,6 +329,7 @@ app.get('/api/players/:id/profile', (req, res) => {
   res.json({
     player,
     badges,
+    partners,
     career: shapePlayerStats(careerRow || {}),
     seasons: seasonRows.map((r) => ({ season_id: r.season_id, season_name: r.season_name, ...shapePlayerStats(r) })),
     matches: matchRows.map((r) => ({
@@ -331,6 +346,8 @@ app.get('/api/players/:id/profile', (req, res) => {
       singles_lost: r.singles_lost,
       doubles_won: r.doubles_won,
       doubles_lost: r.doubles_lost,
+      partner_id: r.partner_id,
+      partner_name: r.partner_name,
     })),
   });
 });
@@ -490,12 +507,15 @@ app.delete('/api/weeks/:id', requireAdmin, (req, res) => {
 });
 
 // ---------- Match entries for a week ----------
+// How many doubles pairs a week can have (Double 1, 2, 3).
+const DOUBLES_PAIR_SLOTS = 3;
+
 app.get('/api/weeks/:id/entries', requireAdmin, (req, res) => {
   const week = get('SELECT * FROM match_weeks WHERE id = ?', [req.params.id]);
   if (!week) return res.status(404).json({ error: 'week not found' });
   const roster = all(
     `SELECT p.id AS player_id, p.name,
-            e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost, e.appearances
+            e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost, e.appearances, e.doubles_pair
      FROM season_rosters sr
      JOIN players p ON p.id = sr.player_id
      LEFT JOIN match_entries e ON e.week_id = ? AND e.player_id = p.id
@@ -503,7 +523,7 @@ app.get('/api/weeks/:id/entries', requireAdmin, (req, res) => {
      ORDER BY p.name`,
     [req.params.id, week.season_id]
   );
-  res.json({ week, roster });
+  res.json({ week, roster, doubles_pair_slots: DOUBLES_PAIR_SLOTS });
 });
 
 app.put('/api/weeks/:id/entries/:playerId', requireAdmin, (req, res) => {
@@ -512,22 +532,40 @@ app.put('/api/weeks/:id/entries/:playerId', requireAdmin, (req, res) => {
   const sl = Number(singles_lost) || 0;
   const dw = Number(doubles_won) || 0;
   const dl = Number(doubles_lost) || 0;
-  const existing = get('SELECT id FROM match_entries WHERE week_id = ? AND player_id = ?', [req.params.id, req.params.playerId]);
+  const existing = get('SELECT id, doubles_pair FROM match_entries WHERE week_id = ? AND player_id = ?', [req.params.id, req.params.playerId]);
+
+  // The doubles pair number says who partnered whom. Left out of the request, it keeps its
+  // current value; it's only meaningful if the player actually played doubles.
+  let pair = req.body.doubles_pair === undefined ? (existing ? existing.doubles_pair : null) : req.body.doubles_pair;
+  if (pair === '') pair = null;
+  if (pair !== null) {
+    pair = Number(pair);
+    if (!Number.isInteger(pair) || pair < 1 || pair > DOUBLES_PAIR_SLOTS) {
+      return res.status(400).json({ error: `Doubles pair must be 1 to ${DOUBLES_PAIR_SLOTS}.` });
+    }
+  }
+  if (dw + dl === 0) pair = null;
+  if (pair !== null) {
+    const others = get(
+      'SELECT COUNT(*) AS c FROM match_entries WHERE week_id = ? AND doubles_pair = ? AND player_id != ?',
+      [req.params.id, pair, req.params.playerId]
+    ).c;
+    if (others >= 2) return res.status(400).json({ error: `Double ${pair} already has two players this week.` });
+  }
+
   if (existing) {
     run(
-      'UPDATE match_entries SET singles_won = ?, singles_lost = ?, doubles_won = ?, doubles_lost = ? WHERE id = ?',
-      [sw, sl, dw, dl, existing.id]
+      'UPDATE match_entries SET singles_won = ?, singles_lost = ?, doubles_won = ?, doubles_lost = ?, doubles_pair = ? WHERE id = ?',
+      [sw, sl, dw, dl, pair, existing.id]
     );
   } else {
     run(
-      'INSERT INTO match_entries (week_id, player_id, singles_won, singles_lost, doubles_won, doubles_lost, appearances) VALUES (?, ?, ?, ?, ?, ?, 1)',
-      [req.params.id, req.params.playerId, sw, sl, dw, dl]
+      'INSERT INTO match_entries (week_id, player_id, singles_won, singles_lost, doubles_won, doubles_lost, appearances, doubles_pair) VALUES (?, ?, ?, ?, ?, ?, 1, ?)',
+      [req.params.id, req.params.playerId, sw, sl, dw, dl, pair]
     );
   }
   res.json({ ok: true });
-});
-
-app.delete('/api/weeks/:id/entries/:playerId', requireAdmin, (req, res) => {
+});app.delete('/api/weeks/:id/entries/:playerId', requireAdmin, (req, res) => {
   run('DELETE FROM match_entries WHERE week_id = ? AND player_id = ?', [req.params.id, req.params.playerId]);
   res.status(204).end();
 });
@@ -781,7 +819,48 @@ app.get('/api/stats/head-to-head', (req, res) => {
   });
 });
 
-// ---------- Achievements: season awards & career milestones ----------
+// ---------- Doubles partnerships ----------
+// A partnership is two players sharing a doubles pair number in the same week with the same
+// doubles result. A week where the pair is incomplete or the two results disagree is left out
+// (admin Match Entry flags it) rather than guessed at.
+function partnershipRows({ seasonId = null, playerId = null } = {}) {
+  return all(
+    `SELECT e1.player_id AS a_id, p1.name AS a_name, e2.player_id AS b_id, p2.name AS b_name,
+            COUNT(*) AS played,
+            SUM(CASE WHEN e1.doubles_won > 0 THEN 1 ELSE 0 END) AS wins,
+            SUM(CASE WHEN e1.doubles_lost > 0 THEN 1 ELSE 0 END) AS losses,
+            MAX(w.match_date) AS last_played
+     FROM match_entries e1
+     JOIN match_entries e2 ON e2.week_id = e1.week_id AND e2.doubles_pair = e1.doubles_pair AND e2.player_id > e1.player_id
+     JOIN match_weeks w ON w.id = e1.week_id
+     JOIN players p1 ON p1.id = e1.player_id
+     JOIN players p2 ON p2.id = e2.player_id
+     WHERE e1.doubles_pair IS NOT NULL AND w.is_aggregate = 0
+       AND (e1.doubles_won > 0 OR e1.doubles_lost > 0)
+       AND NOT (e1.doubles_won > 0 AND e1.doubles_lost > 0)
+       AND (e1.doubles_won > 0) = (e2.doubles_won > 0) AND (e1.doubles_lost > 0) = (e2.doubles_lost > 0)
+       AND (SELECT COUNT(*) FROM match_entries x WHERE x.week_id = e1.week_id AND x.doubles_pair = e1.doubles_pair) = 2
+       AND (? IS NULL OR w.season_id = ?)
+       AND (? IS NULL OR e1.player_id = ? OR e2.player_id = ?)
+     GROUP BY e1.player_id, e2.player_id`,
+    [seasonId, seasonId, playerId, playerId, playerId]
+  );
+}
+
+app.get('/api/stats/partnerships', (req, res) => {
+  const seasonId = req.query.season_id ? Number(req.query.season_id) : null;
+  res.json(
+    partnershipRows({ seasonId }).map((r) => ({
+      player_a: { player_id: r.a_id, name: r.a_name },
+      player_b: { player_id: r.b_id, name: r.b_name },
+      played: r.played,
+      wins: r.wins,
+      losses: r.losses,
+      win_pct: r.played > 0 ? r.wins / r.played : null,
+      last_played: r.last_played,
+    }))
+  );
+});// ---------- Achievements: season awards & career milestones ----------
 // Season awards are snapshotted into season_awards when an admin publishes them, and are
 // hidden from everyone else until then. Career milestones are always live.
 const achievements = createAchievementEngine();

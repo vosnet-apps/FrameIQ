@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS match_weeks (
 
 -- singles_lost/doubles_lost are nullable: NULL means losses weren't recorded
 -- (used for imported season-total rows), so frame win% excludes them rather than assuming 0 losses.
+-- doubles_pair is an optional label (1, 2, 3...): two players sharing it in a week were doubles partners.
 CREATE TABLE IF NOT EXISTS match_entries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   week_id INTEGER NOT NULL REFERENCES match_weeks(id) ON DELETE CASCADE,
@@ -70,6 +71,7 @@ CREATE TABLE IF NOT EXISTS match_entries (
   doubles_won INTEGER NOT NULL DEFAULT 0,
   doubles_lost INTEGER,
   appearances INTEGER NOT NULL DEFAULT 1,
+  doubles_pair INTEGER,
   UNIQUE(week_id, player_id)
 );
 
@@ -153,6 +155,12 @@ for (const [col, ddl] of [
 const seasonColumns = db.prepare("PRAGMA table_info(seasons)").all().map((c) => c.name);
 if (!seasonColumns.includes('awards_published_at')) {
   db.exec('ALTER TABLE seasons ADD COLUMN awards_published_at INTEGER');
+}
+
+// Migrate older databases created before doubles partners could be recorded.
+const entryColumns = db.prepare('PRAGMA table_info(match_entries)').all().map((c) => c.name);
+if (!entryColumns.includes('doubles_pair')) {
+  db.exec('ALTER TABLE match_entries ADD COLUMN doubles_pair INTEGER');
 }
 
 // Migrate older databases created before a season could record its league and division.

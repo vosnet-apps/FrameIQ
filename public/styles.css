@@ -907,6 +907,10 @@ input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 .badge-count { background: var(--crimson); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 0.75rem; font-weight: 700; }
 
 #seasonsBody input[type=text] { min-width: 150px; }
+.partner-note { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+select.pair-select:disabled { opacity: 0.45; cursor: not-allowed; }
+.pair-warnings { color: var(--amber-text); }
+.pair-warnings div { margin-top: 4px; }
 .league-line { color: var(--muted); font-size: 0.9rem; margin: -6px 0 14px; }
 
 .player-badges { display: flex; gap: 6px; flex-wrap: wrap; }

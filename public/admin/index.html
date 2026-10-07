@@ -90,6 +90,7 @@
           <button class="view-toggle-btn active" data-view="performance">Performance</button>
           <button class="view-toggle-btn" data-view="results">Results / Fixtures</button>
           <button class="view-toggle-btn" data-view="h2h">Head-to-Head</button>
+          <button class="view-toggle-btn" data-view="partners">Partnerships</button>
           <button class="view-toggle-btn" data-view="awards">Awards</button>
         </div>
         <label class="all-time-toggle" id="allTimeToggleWrap"><input type="checkbox" id="allTimeToggle" /> All-time (career)</label>
@@ -136,7 +137,24 @@
         <p id="resultsEmpty" class="hint" hidden>No fixtures or results recorded for this season yet.</p>
       </div>
 
-      <div id="awardsView" hidden>
+      <div id="partnersView" hidden>
+        <div class="table-scroll">
+        <table id="partnersTable" class="data-table sortable">
+          <thead>
+            <tr>
+              <th data-key="pair">Pair</th>
+              <th data-key="played">Played</th>
+              <th data-key="wins">W</th>
+              <th data-key="losses">L</th>
+              <th data-key="win_pct">Win %</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p id="partnersEmpty" class="hint" hidden>No doubles pairings recorded for this season yet.</p>
+        <p class="hint">Doubles records for the selected season. A week counts once both partners are recorded with the same doubles result.</p>
+      </div>      <div id="awardsView" hidden>
         <div id="awardsNotice" class="awards-notice" hidden></div>
         <h2 class="kpi-row-title" id="awardsTitle" hidden>Season awards</h2>
         <div id="awardGrid" class="award-grid"></div>
@@ -214,6 +232,8 @@
           <tbody id="weekEntryBody"></tbody>
         </table>
         </div>
+        <div id="pairWarnings" class="hint pair-warnings" hidden></div>
+        <p class="hint">Optional: give each player who played doubles a pair (Double 1, 2 or 3). Players sharing a pair this week were partners.</p>
       </div>
     </section>
 

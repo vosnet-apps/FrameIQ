@@ -71,6 +71,20 @@ function notFound() {
     )
     .join('');
 
+  const partners = data.partners || [];
+  $('#partnersSection').hidden = !partners.length;
+  $('#partnersTable tbody').innerHTML = partners
+    .map(
+      (p) => `<tr>
+        <td><a class="player-link" href="/player.html?id=${p.player_id}">${escapeHtml(p.name)}</a></td>
+        <td>${p.played}</td>
+        <td>${p.wins}</td>
+        <td>${p.losses}</td>
+        <td>${p.win_pct == null ? '—' : Math.round(p.win_pct * 100) + '%'}</td>
+      </tr>`
+    )
+    .join('');
+
   if (!data.matches.length) {
     $('#noMatches').hidden = false;
     return;
@@ -106,7 +120,7 @@ function notFound() {
         <td>${score}</td>
         <td><span class="result-pill ${resultClass}">${result}</span></td>
         <td>${frameCell(m.singles_won, m.singles_lost)}</td>
-        <td>${frameCell(m.doubles_won, m.doubles_lost)}</td>
+        <td>${frameCell(m.doubles_won, m.doubles_lost)}${m.partner_name ? ` <span class="partner-note">with <a class="player-link" href="/player.html?id=${m.partner_id}">${escapeHtml(m.partner_name)}</a></span>` : ''}</td>
         <td>${form}</td>
       </tr>`;
     })

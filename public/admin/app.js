@@ -6,6 +6,9 @@ const state = {
   statsSortDir: 'desc',
   selectedWeekId: null,
   statsView: 'performance',
+  partnerRows: [],
+  partnersSortKey: 'wins',
+  partnersSortDir: 'desc',
   resultsWeeks: [],
   resultsSortKey: 'week',
   resultsSortDir: 'asc',
@@ -133,6 +136,7 @@ function refreshCurrentTab() {
     if (state.statsView === 'performance') loadStats();
     else if (state.statsView === 'results') loadResults();
     else if (state.statsView === 'awards') loadAwards();
+    else if (state.statsView === 'partners') loadPartners();
     else loadH2H();
   }
   if (tab === 'matches') loadWeeks();
@@ -170,10 +174,12 @@ $$('.view-toggle-btn').forEach((btn) => {
     $('#resultsView').hidden = state.statsView !== 'results';
     $('#h2hView').hidden = state.statsView !== 'h2h';
     $('#awardsView').hidden = state.statsView !== 'awards';
+    $('#partnersView').hidden = state.statsView !== 'partners';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     if (state.statsView === 'performance') loadStats();
     else if (state.statsView === 'results') loadResults();
     else if (state.statsView === 'awards') loadAwards();
+    else if (state.statsView === 'partners') loadPartners();
     else loadH2H();
   });
 });
@@ -437,7 +443,53 @@ function renderAwards(data) {
   $('#upcomingList').innerHTML = listHtml(data.upcoming, (m) => ` — ${m.remaining} to go`);
 }
 
-// ---------- Head-to-head (all-time, not season-scoped) ----------
+// ---------- Partnerships (season-scoped) ----------
+async function loadPartners() {
+  if (!state.currentSeasonId) return;
+  state.partnerRows = await api(`/api/stats/partnerships?season_id=${state.currentSeasonId}`);
+  renderPartners();
+}
+
+function renderPartners() {
+  const dir = state.partnersSortDir === 'asc' ? 1 : -1;
+  const rows = state.partnerRows.map((r) => ({ ...r, pair: `${r.player_a.name} & ${r.player_b.name}` }));
+  rows.sort((a, b) => {
+    const av = a[state.partnersSortKey];
+    const bv = b[state.partnersSortKey];
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+    return cmp * dir || a.pair.localeCompare(b.pair);
+  });
+  $('#partnersEmpty').hidden = rows.length > 0;
+  $('#partnersTable tbody').innerHTML = rows
+    .map(
+      (r) => `<tr>
+        <td>${escapeHtml(r.player_a.name)} &amp; ${escapeHtml(r.player_b.name)}</td>
+        <td>${r.played}</td>
+        <td>${r.wins}</td>
+        <td>${r.losses}</td>
+        <td>${r.win_pct == null ? '—' : Math.round(r.win_pct * 100) + '%'}</td>
+      </tr>`
+    )
+    .join('');
+  $$('#partnersTable th[data-key]').forEach((th) => {
+    th.classList.toggle('sorted', th.dataset.key === state.partnersSortKey);
+    th.classList.toggle('asc', th.dataset.key === state.partnersSortKey && state.partnersSortDir === 'asc');
+  });
+}
+
+$$('#partnersTable th[data-key]').forEach((th) => {
+  th.addEventListener('click', () => {
+    if (state.partnersSortKey === th.dataset.key) {
+      state.partnersSortDir = state.partnersSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.partnersSortKey = th.dataset.key;
+      state.partnersSortDir = 'asc';
+    }
+    renderPartners();
+  });
+});// ---------- Head-to-head (all-time, not season-scoped) ----------
 async function loadH2H() {
   const data = await api('/api/stats/head-to-head');
   renderH2H(data);
@@ -564,7 +616,32 @@ function resultSelect(cssClass, current) {
   </select>`;
 }
 
-async function loadWeekEntry() {
+function pairSelectHtml(current, slots, enabled) {
+  const options = ['<option value="">—</option>'];
+  for (let i = 1; i <= slots; i++) {
+    options.push(`<option value="${i}" ${Number(current) === i ? 'selected' : ''}>Double ${i}</option>`);
+  }
+  return `<select class="pill-select pair-select" ${enabled ? '' : 'disabled'} title="Players in the same pair this week were doubles partners">${options.join('')}</select>`;
+}
+
+// Soft checks on the doubles pairs as entered: a pair needs two players with the same result.
+function showPairWarnings() {
+  const byPair = new Map();
+  $$('#weekEntryBody tr[data-player]').forEach((row) => {
+    const pair = row.querySelector('.pair-select').value;
+    if (!pair) return;
+    if (!byPair.has(pair)) byPair.set(pair, []);
+    byPair.get(pair).push({ name: row.children[0].textContent.trim(), result: row.querySelector('.doubles-result').value });
+  });
+  const issues = [];
+  for (const [pair, players] of [...byPair].sort((a, b) => a[0] - b[0])) {
+    if (players.length === 1) issues.push(`Double ${pair} only has ${players[0].name}. Choose their partner.`);
+    else if (players[0].result !== players[1].result) issues.push(`Double ${pair}: ${players[0].name} and ${players[1].name} have different doubles results.`);
+  }
+  const box = $('#pairWarnings');
+  box.hidden = !issues.length;
+  box.innerHTML = issues.map((i) => `<div>⚠ ${escapeHtml(i)}</div>`).join('');
+}async function loadWeekEntry() {
   const data = await api(`/api/weeks/${state.selectedWeekId}/entries`);
   const panel = $('#weekEntryPanel');
   panel.hidden = false;
@@ -575,6 +652,7 @@ async function loadWeekEntry() {
 
   if (data.week.is_aggregate) {
     detailsForm.hidden = true;
+    $('#pairWarnings').hidden = true;
     head.innerHTML = '<tr><th>Player</th><th>Singles Won</th><th>Singles Lost</th><th>Doubles Won</th><th>Doubles Lost</th></tr>';
     $('#weekEntryTitle').textContent += ' — read-only historical import';
     body.innerHTML = data.roster
@@ -591,7 +669,7 @@ async function loadWeekEntry() {
     return;
   }
 
-  head.innerHTML = '<tr><th>Player</th><th>Singles</th><th>Doubles</th></tr>';
+  head.innerHTML = '<tr><th>Player</th><th>Singles</th><th>Doubles</th><th>Doubles pair</th></tr>';
   detailsForm.hidden = false;
   $('#detailOpponent').value = data.week.opponent || '';
   $('#detailDate').value = data.week.match_date || '';
@@ -608,6 +686,7 @@ async function loadWeekEntry() {
         <td>${escapeHtml(r.name)}</td>
         <td>${resultSelect('singles-result', singlesResult)}</td>
         <td>${resultSelect('doubles-result', doublesResult)}</td>
+        <td>${pairSelectHtml(r.doubles_pair, data.doubles_pair_slots, doublesResult !== 'none')}</td>
       </tr>`;
     })
     .join('');
@@ -616,6 +695,7 @@ async function loadWeekEntry() {
     const playerId = row.dataset.player;
     const singlesSelect = row.querySelector('.singles-result');
     const doublesSelect = row.querySelector('.doubles-result');
+    const pairSelect = row.querySelector('.pair-select');
 
     const save = async () => {
       if (singlesSelect.value === 'none' && doublesSelect.value === 'none') {
@@ -629,6 +709,7 @@ async function loadWeekEntry() {
         singles_lost: singlesSelect.value === 'lost' ? 1 : 0,
         doubles_won: doublesSelect.value === 'won' ? 1 : 0,
         doubles_lost: doublesSelect.value === 'lost' ? 1 : 0,
+        doubles_pair: doublesSelect.value === 'none' || !pairSelect.value ? null : Number(pairSelect.value),
       };
       await api(`/api/weeks/${state.selectedWeekId}/entries/${playerId}`, {
         method: 'PUT',
@@ -636,16 +717,32 @@ async function loadWeekEntry() {
       });
     };
 
+    // A refused save (e.g. a third player on a pair) reloads the panel so it shows what's stored.
+    const persist = async () => {
+      try {
+        await save();
+      } catch (err) {
+        alert(err.message);
+        await loadWeekEntry();
+        return;
+      }
+      showPairWarnings();
+    };
+
     [singlesSelect, doublesSelect].forEach((select) => {
       select.addEventListener('change', () => {
         select.className = select.className.replace(/result-\S+/, `result-${select.value}`);
-        save();
+        if (select === doublesSelect) {
+          if (select.value === 'none') pairSelect.value = '';
+          pairSelect.disabled = select.value === 'none';
+        }
+        persist();
       });
     });
+    pairSelect.addEventListener('change', persist);
   });
-
-  if (!data.roster.length) {
-    body.innerHTML = `<tr><td colspan="3">No players on this season's roster yet. Add them under the Roster tab first.</td></tr>`;
+  showPairWarnings();  if (!data.roster.length) {
+    body.innerHTML = `<tr><td colspan="4">No players on this season's roster yet. Add them under the Roster tab first.</td></tr>`;
   }
 }
 

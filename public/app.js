@@ -4,6 +4,9 @@ const state = {
   statsSortKey: 'total_points',
   statsSortDir: 'desc',
   statsView: 'performance',
+  partnerRows: [],
+  partnersSortKey: 'wins',
+  partnersSortDir: 'desc',
   resultsWeeks: [],
   resultsSortKey: 'week',
   resultsSortDir: 'asc',
@@ -54,6 +57,7 @@ function refresh() {
   if (state.statsView === 'performance') loadStats();
   else if (state.statsView === 'results') loadResults();
   else if (state.statsView === 'awards') loadAwards();
+  else if (state.statsView === 'partners') loadPartners();
   else loadH2H();
 }
 
@@ -67,6 +71,7 @@ $$('.view-toggle-btn').forEach((btn) => {
     $('#resultsView').hidden = state.statsView !== 'results';
     $('#h2hView').hidden = state.statsView !== 'h2h';
     $('#awardsView').hidden = state.statsView !== 'awards';
+    $('#partnersView').hidden = state.statsView !== 'partners';
     $('#allTimeToggleWrap').hidden = state.statsView !== 'performance';
     refresh();
   });
@@ -285,7 +290,53 @@ $$('#resultsTable th[data-key]').forEach((th) => {
   });
 });
 
-// ---------- Head-to-head (all-time, not season-scoped) ----------
+// ---------- Partnerships (season-scoped) ----------
+async function loadPartners() {
+  if (!state.currentSeasonId) return;
+  state.partnerRows = await api(`/api/stats/partnerships?season_id=${state.currentSeasonId}`);
+  renderPartners();
+}
+
+function renderPartners() {
+  const dir = state.partnersSortDir === 'asc' ? 1 : -1;
+  const rows = state.partnerRows.map((r) => ({ ...r, pair: `${r.player_a.name} & ${r.player_b.name}` }));
+  rows.sort((a, b) => {
+    const av = a[state.partnersSortKey];
+    const bv = b[state.partnersSortKey];
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+    return cmp * dir || a.pair.localeCompare(b.pair);
+  });
+  $('#partnersEmpty').hidden = rows.length > 0;
+  $('#partnersTable tbody').innerHTML = rows
+    .map(
+      (r) => `<tr>
+        <td><a class="player-link" href="/player.html?id=${r.player_a.player_id}">${escapeHtml(r.player_a.name)}</a> &amp; <a class="player-link" href="/player.html?id=${r.player_b.player_id}">${escapeHtml(r.player_b.name)}</a></td>
+        <td>${r.played}</td>
+        <td>${r.wins}</td>
+        <td>${r.losses}</td>
+        <td>${r.win_pct == null ? '—' : Math.round(r.win_pct * 100) + '%'}</td>
+      </tr>`
+    )
+    .join('');
+  $$('#partnersTable th[data-key]').forEach((th) => {
+    th.classList.toggle('sorted', th.dataset.key === state.partnersSortKey);
+    th.classList.toggle('asc', th.dataset.key === state.partnersSortKey && state.partnersSortDir === 'asc');
+  });
+}
+
+$$('#partnersTable th[data-key]').forEach((th) => {
+  th.addEventListener('click', () => {
+    if (state.partnersSortKey === th.dataset.key) {
+      state.partnersSortDir = state.partnersSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.partnersSortKey = th.dataset.key;
+      state.partnersSortDir = 'asc';
+    }
+    renderPartners();
+  });
+});// ---------- Head-to-head (all-time, not season-scoped) ----------
 async function loadH2H() {
   const data = await api('/api/stats/head-to-head');
   renderH2H(data);
