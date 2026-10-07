@@ -403,7 +403,9 @@ async function loadAwards() {
 }
 
 function awardCardHtml(a) {
-  const link = (w) => `<a class="player-link" href="/player.html?id=${w.player_id}" target="_blank" rel="noopener">${escapeHtml(w.name)}</a>`;
+  const link = (w) =>
+    `<a class="player-link" href="/player.html?id=${w.player_id}" target="_blank" rel="noopener">${escapeHtml(w.name)}</a>` +
+    (w.partner_id ? ` &amp; <a class="player-link" href="/player.html?id=${w.partner_id}" target="_blank" rel="noopener">${escapeHtml(w.partner_name)}</a>` : '');
   const body = a.group === 'team'
     ? `<div class="award-winners feat-list">${a.winners.map((w) => `<div>${escapeHtml(w.value || '')}</div>`).join('')}</div>`
     : a.group === 'feat'

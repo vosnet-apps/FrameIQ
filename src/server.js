@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { db } from './db.js';
 import { createAchievementEngine, loadContext } from './achievements.js';
+import { partnershipRows as queryPartnerships } from './partnerships.js';
 
 if (!process.env.ADMIN_PASSWORD) {
   console.error('ADMIN_PASSWORD is not set. Copy .env.example to .env and set a password before starting the server.');
@@ -313,15 +314,28 @@ app.get('/api/players/:id/profile', (req, res) => {
   const ctx = loadContext({ all, get }, settings);
   const seasonNames = new Map(ctx.seasons.map((x) => [x.id, x.name]));
   const badgeMap = new Map();
-  const addBadge = (id, seasonId) => {
+  const addBadge = (id, seasonId, withName = null) => {
     const d = achievements.describe(id);
     if (!d) return;
     const b = badgeMap.get(id) || { ...d, count: 0, seasons: [] };
     b.count += 1;
-    b.seasons.push(seasonNames.get(seasonId));
+    b.seasons.push(withName ? `${seasonNames.get(seasonId)} (with ${withName})` : seasonNames.get(seasonId));
     badgeMap.set(id, b);
   };
-  for (const r of all('SELECT a.achievement_id, a.season_id FROM season_awards a JOIN seasons s ON s.id = a.season_id WHERE a.player_id = ? ORDER BY s.sort_order', [playerId])) addBadge(r.achievement_id, r.season_id);
+  const awardRowsForPlayer = all(
+    `SELECT a.achievement_id, a.season_id, a.player_id, a.partner_id, p1.name AS name1, p2.name AS name2
+     FROM season_awards a
+     JOIN seasons s ON s.id = a.season_id
+     LEFT JOIN players p1 ON p1.id = a.player_id
+     LEFT JOIN players p2 ON p2.id = a.partner_id
+     WHERE a.player_id = ? OR a.partner_id = ?
+     ORDER BY s.sort_order`,
+    [playerId, playerId]
+  );
+  for (const r of awardRowsForPlayer) {
+    const partnerName = r.partner_id ? (r.player_id === playerId ? r.name2 : r.name1) : null;
+    addBadge(r.achievement_id, r.season_id, partnerName);
+  }
   for (const r of achievements.evaluateCareer(ctx).filter((m) => m.player_id === playerId)) addBadge(r.achievement_id, r.season_id);
   const order = new Map(achievements.definitions.map((d, i) => [d.id, i]));
   const badges = [...badgeMap.values()].sort((a, b) => order.get(a.id) - order.get(b.id));
@@ -823,29 +837,7 @@ app.get('/api/stats/head-to-head', (req, res) => {
 // A partnership is two players sharing a doubles pair number in the same week with the same
 // doubles result. A week where the pair is incomplete or the two results disagree is left out
 // (admin Match Entry flags it) rather than guessed at.
-function partnershipRows({ seasonId = null, playerId = null } = {}) {
-  return all(
-    `SELECT e1.player_id AS a_id, p1.name AS a_name, e2.player_id AS b_id, p2.name AS b_name,
-            COUNT(*) AS played,
-            SUM(CASE WHEN e1.doubles_won > 0 THEN 1 ELSE 0 END) AS wins,
-            SUM(CASE WHEN e1.doubles_lost > 0 THEN 1 ELSE 0 END) AS losses,
-            MAX(w.match_date) AS last_played
-     FROM match_entries e1
-     JOIN match_entries e2 ON e2.week_id = e1.week_id AND e2.doubles_pair = e1.doubles_pair AND e2.player_id > e1.player_id
-     JOIN match_weeks w ON w.id = e1.week_id
-     JOIN players p1 ON p1.id = e1.player_id
-     JOIN players p2 ON p2.id = e2.player_id
-     WHERE e1.doubles_pair IS NOT NULL AND w.is_aggregate = 0
-       AND (e1.doubles_won > 0 OR e1.doubles_lost > 0)
-       AND NOT (e1.doubles_won > 0 AND e1.doubles_lost > 0)
-       AND (e1.doubles_won > 0) = (e2.doubles_won > 0) AND (e1.doubles_lost > 0) = (e2.doubles_lost > 0)
-       AND (SELECT COUNT(*) FROM match_entries x WHERE x.week_id = e1.week_id AND x.doubles_pair = e1.doubles_pair) = 2
-       AND (? IS NULL OR w.season_id = ?)
-       AND (? IS NULL OR e1.player_id = ? OR e2.player_id = ?)
-     GROUP BY e1.player_id, e2.player_id`,
-    [seasonId, seasonId, playerId, playerId, playerId]
-  );
-}
+const partnershipRows = (options) => queryPartnerships({ all }, options);
 
 app.get('/api/stats/partnerships', (req, res) => {
   const seasonId = req.query.season_id ? Number(req.query.season_id) : null;
@@ -877,7 +869,7 @@ function snapshotSeasonAwards(seasonId) {
   try {
     run('DELETE FROM season_awards WHERE season_id = ?', [seasonId]);
     for (const r of results) {
-      run('INSERT INTO season_awards (season_id, achievement_id, player_id, value) VALUES (?, ?, ?, ?)', [seasonId, r.achievement_id, r.player_id, r.value]);
+      run('INSERT INTO season_awards (season_id, achievement_id, player_id, partner_id, value) VALUES (?, ?, ?, ?, ?)', [seasonId, r.achievement_id, r.player_id, r.partner_id ?? null, r.value]);
     }
     run('UPDATE seasons SET awards_published_at = ? WHERE id = ?', [Date.now(), seasonId]);
     db.exec('COMMIT');
@@ -894,7 +886,7 @@ function groupAwards(rows) {
     .filter((d) => d.kind === 'season')
     .map((d) => {
       const winners = rows.filter((r) => r.achievement_id === d.id);
-      return winners.length ? { ...d, value: winners[0].value, winners: winners.map((w) => ({ player_id: w.player_id, name: w.name, value: w.value })) } : null;
+      return winners.length ? { ...d, value: winners[0].value, winners: winners.map((w) => ({ player_id: w.player_id, name: w.name, partner_id: w.partner_id ?? null, partner_name: w.partner_name ?? null, value: w.value })) } : null;
     })
     .filter(Boolean);
 }
@@ -927,8 +919,8 @@ app.get('/api/stats/awards', (req, res) => {
   let awardRows = [];
   if (published) {
     awardRows = all(
-      `SELECT a.achievement_id, a.player_id, p.name, a.value
-       FROM season_awards a LEFT JOIN players p ON p.id = a.player_id
+      `SELECT a.achievement_id, a.player_id, p.name, a.partner_id, p2.name AS partner_name, a.value
+       FROM season_awards a LEFT JOIN players p ON p.id = a.player_id LEFT JOIN players p2 ON p2.id = a.partner_id
        WHERE a.season_id = ? ORDER BY p.name COLLATE NOCASE, a.id`,
       [season.id]
     );

@@ -16,10 +16,13 @@
 //                                          century_club: { threshold: 150 } } })
 //
 // A season definition supplies evaluate(ctx, seasonId, params) -> [{ player_id, name, value }].
+// A pair award adds partner_id and partner_name to each row (one row per pair).
 // A career definition supplies a metric ('frames_won' | 'appearances' for players,
 // 'team_wins' | 'team_played' for the team) and a threshold.
 // Definitions with subject: 'team' belong to the team rather than a player: their rows have
 // player_id and name set to null.
+
+import { partnershipRows } from './partnerships.js';
 
 const MIN_APPEARANCES = 3;
 
@@ -68,6 +71,26 @@ const SEASON_DEFINITIONS = [
     },
   },
   {
+    id: 'dynamic_duo', kind: 'season', group: 'award', icon: '👥', title: 'Dynamic Duo',
+    description: 'Best doubles record as a pair in the season.',
+    params: { minPlayed: 3 },
+    evaluate(ctx, seasonId, p) {
+      // A pair needs at least minPlayed weeks together and a winning record.
+      const pairs = ctx.partnerships(seasonId).filter((r) => r.played >= p.minPlayed && r.wins > r.losses);
+      const best = topRows(pairs, (a, b) => b.wins / b.played - a.wins / a.played || b.wins - a.wins || b.played - a.played);
+      // A player is in at most one winning pair: if tied pairs share a player, the first by name wins.
+      const taken = new Set();
+      const winners = [];
+      const byName = (r) => `${r.a_name} ${r.b_name}`;
+      for (const r of best.sort((x, y) => byName(x).localeCompare(byName(y)))) {
+        if (taken.has(r.a_id) || taken.has(r.b_id)) continue;
+        taken.add(r.a_id);
+        taken.add(r.b_id);
+        winners.push({ player_id: r.a_id, name: r.a_name, partner_id: r.b_id, partner_name: r.b_name, value: `${r.wins}W ${r.losses}L together` });
+      }
+      return winners;
+    },
+  },  {
     id: 'most_improved', kind: 'season', group: 'award', icon: '📈', title: 'Most Improved',
     description: 'Biggest rise in points per game on the previous season.',
     params: { minAppearances: MIN_APPEARANCES },
@@ -282,6 +305,7 @@ function loadContext({ all }, settings) {
     weekRows,
     playerSeasons: (seasonId) => seasonRows.filter((r) => r.season_id === seasonId),
     playedWeeks: (seasonId) => playedBySeason.get(seasonId) || 0,
+    partnerships: (seasonId) => partnershipRows({ all }, { seasonId }),
   };
 }
 

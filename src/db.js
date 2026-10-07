@@ -101,13 +101,15 @@ CREATE TABLE IF NOT EXISTS server_secrets (
 
 -- Snapshot of a season's awards, written when the admin publishes them so the announced
 -- result stays fixed. One row per winner (ties share an award); player_id is NULL for
--- team awards, which can have several rows (e.g. one per whitewash). Career milestones are not
+-- team awards, which can have several rows (e.g. one per whitewash). A pair award (Dynamic
+-- Duo) is one row per pair: player_id and partner_id are the two partners. Career milestones are not
 -- stored - they're worked out live.
 CREATE TABLE IF NOT EXISTS season_awards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
   achievement_id TEXT NOT NULL,
   player_id INTEGER REFERENCES players(id) ON DELETE CASCADE,
+  partner_id INTEGER REFERENCES players(id) ON DELETE CASCADE,
   value TEXT,
   UNIQUE(season_id, achievement_id, player_id)
 );
@@ -155,6 +157,12 @@ for (const [col, ddl] of [
 const seasonColumns = db.prepare("PRAGMA table_info(seasons)").all().map((c) => c.name);
 if (!seasonColumns.includes('awards_published_at')) {
   db.exec('ALTER TABLE seasons ADD COLUMN awards_published_at INTEGER');
+}
+
+// Migrate older databases created before pair awards could be published.
+const awardColumns = db.prepare('PRAGMA table_info(season_awards)').all().map((c) => c.name);
+if (!awardColumns.includes('partner_id')) {
+  db.exec('ALTER TABLE season_awards ADD COLUMN partner_id INTEGER REFERENCES players(id) ON DELETE CASCADE');
 }
 
 // Migrate older databases created before doubles partners could be recorded.

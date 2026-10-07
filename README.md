@@ -56,7 +56,7 @@ If you put this online, make sure `.env` is never committed or exposed — `.git
 
 The public **Awards** tab and each player's profile page are worked out from the results you already enter — there is nothing extra to record.
 
-- **Season awards** — Player of the Season, Sharpshooter (best frame win %), Singles Specialist, Doubles Ace, Most Improved (points per game against the previous season) and Hot Streak (longest run of winning weeks). Ties are shared.
+- **Season awards** — Player of the Season, Sharpshooter (best frame win %), Singles Specialist, Doubles Ace, Dynamic Duo (the best doubles pair, from the pairs recorded in Match Entry), Most Improved (points per game against the previous season) and Hot Streak (longest run of winning weeks). Ties are shared.
 - **Feats** — Iron Man (played every match of the season) and Perfect Season (finished without losing a frame). Anyone who qualifies gets one.
 - **Team awards** — Unbeaten Season, Longest Winning Run, Whitewash (a match won without conceding a frame) and Record Season (beat every earlier season on win rate or league points).
 - **Career milestones** — First Blood, Half Century, Century Club and Double Century (1st, 50th, 100th and 200th career win), Regular, Veteran and Club Legend (25th, 50th and 100th appearance), plus team milestones for 50 and 100 match wins and 100 matches played. These show as soon as they happen, along with a "Coming up" list of who is close to the next one.
