@@ -46,7 +46,7 @@ function notFound() {
   shelf.innerHTML = data.badges
     .map((b) => {
       const tip = `${b.description} ${b.seasons.filter(Boolean).join(', ')}`;
-      return `<div class="badge" title="${escapeHtml(tip)}"><span class="badge-icon">${b.icon}</span><span class="badge-name">${escapeHtml(b.title)}</span>${b.count > 1 ? `<span class="badge-count">×${b.count}</span>` : ''}</div>`;
+      return `<div class="badge${b.id === 'league_champions' ? ' badge-gold' : ''}" title="${escapeHtml(tip)}"><span class="badge-icon">${b.icon}</span><span class="badge-name">${escapeHtml(b.title)}</span>${b.count > 1 ? `<span class="badge-count">×${b.count}</span>` : ''}</div>`;
     })
     .join('');
 

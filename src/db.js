@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS seasons (
   sort_order INTEGER NOT NULL DEFAULT 0,
   league_name TEXT,
   division TEXT,
-  league_position TEXT
+  league_position TEXT,
+  league_champions INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS season_rosters (
@@ -175,6 +176,9 @@ if (!entryColumns.includes('doubles_pair')) {
 // Migrate older databases created before a season could record its league and division.
 for (const col of ['league_name', 'division', 'league_position']) {
   if (!seasonColumns.includes(col)) db.exec(`ALTER TABLE seasons ADD COLUMN ${col} TEXT`);
+}
+if (!seasonColumns.includes('league_champions')) {
+  db.exec('ALTER TABLE seasons ADD COLUMN league_champions INTEGER NOT NULL DEFAULT 0');
 }
 
 // Migrate older databases created before allow_draws existed.

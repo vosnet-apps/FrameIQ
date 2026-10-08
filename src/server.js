@@ -337,6 +337,7 @@ app.get('/api/players/:id/profile', (req, res) => {
     addBadge(r.achievement_id, r.season_id, partnerName);
   }
   for (const r of achievements.evaluateCareer(ctx).filter((m) => m.player_id === playerId)) addBadge(r.achievement_id, r.season_id);
+  for (const r of achievements.evaluateDeclared(ctx).filter((m) => m.player_id === playerId)) addBadge(r.achievement_id, r.season_id);
   const order = new Map(achievements.definitions.map((d, i) => [d.id, i]));
   const badges = [...badgeMap.values()].sort((a, b) => order.get(a.id) - order.get(b.id));
 
@@ -413,7 +414,7 @@ app.put('/api/seasons/:id', requireAdmin, (req, res) => {
   if (labelError) return res.status(400).json({ error: labelError });
   if (is_active) run('UPDATE seasons SET is_active = 0');
   run(
-    'UPDATE seasons SET name = ?, start_date = ?, end_date = ?, is_active = ?, league_name = ?, division = ?, league_position = ? WHERE id = ?',
+    'UPDATE seasons SET name = ?, start_date = ?, end_date = ?, is_active = ?, league_name = ?, division = ?, league_position = ?, league_champions = ? WHERE id = ?',
     [
       name ?? existing.name,
       start_date === undefined ? existing.start_date : start_date,
@@ -422,6 +423,7 @@ app.put('/api/seasons/:id', requireAdmin, (req, res) => {
       league.value === undefined ? existing.league_name : league.value,
       division.value === undefined ? existing.division : division.value,
       position.value === undefined ? existing.league_position : position.value,
+      req.body.league_champions === undefined ? existing.league_champions : (req.body.league_champions ? 1 : 0),
       req.params.id,
     ]
   );

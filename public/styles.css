@@ -26,6 +26,7 @@
   --amber-text: #e0ab53;
   --amber-soft: #3a2d12;
   --amber-border: #5c4820;
+  --gold-text: #f2c14e;
   font-family: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
@@ -47,6 +48,7 @@
   --amber-soft: #fdf0d5;
   --amber-text: #8a5a05;
   --amber-border: #ecd08e;
+  --gold-text: #8a6500;
   --shadow-card: 0 6px 18px rgba(20, 30, 50, 0.08);
   color-scheme: light;
 }
@@ -912,6 +914,8 @@ select.pair-select:disabled { opacity: 0.45; cursor: not-allowed; }
 .pair-warnings { color: var(--amber-text); }
 .pair-warnings div { margin-top: 4px; }
 .kpi-position { color: var(--text); font-weight: 600; margin-top: 4px; }
+.kpi-position.kpi-champions { color: var(--gold-text); font-weight: 800; letter-spacing: 0.05em; }
+.badge.badge-gold { border-color: var(--gold-text); color: var(--gold-text); }
 .league-line { color: var(--muted); font-size: 0.9rem; margin: -6px 0 14px; }
 
 .player-badges { display: flex; gap: 6px; flex-wrap: wrap; }

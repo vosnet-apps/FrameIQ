@@ -185,13 +185,17 @@ $$('.view-toggle-btn').forEach((btn) => {
 });
 
 // ---------- KPI cards ----------
-// The selected season's current league position, shown on the League Points card. It belongs
-// to a season, so it is hidden when the cards cover every season (All-time).
+// The selected season's current league position (or LEAGUE CHAMPIONS, if declared), shown on
+// the League Points card. It belongs to a season, so it is hidden when the cards cover every
+// season (All-time).
 function showLeaguePosition() {
   const season = state.seasons.find((s) => s.id === state.currentSeasonId);
-  const text = season && !$('#allTimeToggle').checked ? season.league_position : '';
+  const shown = season && !$('#allTimeToggle').checked ? season : null;
+  const champions = !!(shown && shown.league_champions);
+  const text = champions ? 'LEAGUE CHAMPIONS' : shown && shown.league_position ? `Current league position: ${shown.league_position}` : '';
   const el = $('#kpiLeaguePosition');
-  el.textContent = text ? `Current league position: ${text}` : '';
+  el.textContent = text;
+  el.classList.toggle('kpi-champions', champions);
   el.hidden = !text;
 }
 
@@ -933,6 +937,7 @@ async function loadSeasons() {
         <td><input type="text" data-league="${s.id}" value="${escapeHtml(s.league_name || '')}" placeholder="—" maxlength="80" /></td>
         <td><input type="text" data-division="${s.id}" value="${escapeHtml(s.division || '')}" placeholder="—" maxlength="80" /></td>
         <td><input type="text" data-position="${s.id}" value="${escapeHtml(s.league_position || '')}" placeholder="e.g. 1st" maxlength="80" /></td>
+        <td><input type="checkbox" data-champions="${s.id}" ${s.league_champions ? 'checked' : ''} title="Tick if the team won its division" /></td>
         <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
@@ -959,6 +964,20 @@ async function loadSeasons() {
       })
     );
   }
+  body.querySelectorAll('[data-champions]').forEach((el) =>
+    el.addEventListener('change', async () => {
+      const id = Number(el.dataset.champions);
+      try {
+        await api(`/api/seasons/${id}`, { method: 'PUT', body: JSON.stringify({ league_champions: el.checked }) });
+        const cached = state.seasons.find((x) => x.id === id);
+        if (cached) cached.league_champions = el.checked ? 1 : 0;
+        showLeaguePosition();
+      } catch (err) {
+        el.checked = !el.checked;
+        alert(err.message);
+      }
+    })
+  );
   body.querySelectorAll('[data-start]').forEach((el) =>
     el.addEventListener('change', () => api(`/api/seasons/${el.dataset.start}`, { method: 'PUT', body: JSON.stringify({ start_date: el.value || null }) }))
   );

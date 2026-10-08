@@ -6,6 +6,8 @@
 //            a season's awards (see the season_awards table).
 //   career - reached once, ever, by crossing a threshold on a career total (e.g. 100th
 //            win). Worked out live from the data, never stored.
+//   declared - set by the admin rather than calculated (e.g. League Champions, ticked on a
+//            season). Everyone who played in that season earns it. Live, never stored.
 //
 // The engine takes its definitions and per-definition overrides as arguments, so a
 // different edition can add definitions, retune thresholds or switch awards off without
@@ -230,11 +232,16 @@ const TEAM_CAREER_DEFINITIONS = [
   { id: 'team_100_played', kind: 'career', subject: 'team', icon: '📆', title: '100 Matches Played', description: 'The team played its 100th match.', metric: 'team_played', threshold: 100 },
 ];
 
-const DEFAULT_DEFINITIONS = [...SEASON_DEFINITIONS, ...TEAM_SEASON_DEFINITIONS, ...CAREER_DEFINITIONS, ...TEAM_CAREER_DEFINITIONS];
+// declaredIn(season) says whether the admin has declared the achievement for that season.
+const DECLARED_DEFINITIONS = [
+  { id: 'league_champions', kind: 'declared', icon: '🏅', title: 'League Champions', description: 'Played for the team in a season it won its division.', declaredIn: (season) => !!season.league_champions },
+];
+
+const DEFAULT_DEFINITIONS = [...SEASON_DEFINITIONS, ...TEAM_SEASON_DEFINITIONS, ...CAREER_DEFINITIONS, ...TEAM_CAREER_DEFINITIONS, ...DECLARED_DEFINITIONS];
 
 // Reads everything the definitions need in a few queries. all/get are the caller's query helpers.
 function loadContext({ all }, settings) {
-  const seasons = all('SELECT id, name, sort_order FROM seasons ORDER BY sort_order, id');
+  const seasons = all('SELECT id, name, sort_order, league_champions FROM seasons ORDER BY sort_order, id');
   const seasonById = new Map(seasons.map((s) => [s.id, s]));
 
   // One row per player per season, aggregate (imported season-total) rows included.
@@ -354,7 +361,18 @@ function createAchievementEngine({ definitions = DEFAULT_DEFINITIONS, overrides 
     });
   }
 
-  // Career achievements earned, each with the season in which the threshold was crossed.
+  // Admin-declared achievements: every player who played in a declared season earns one.
+  function evaluateDeclared(ctx) {
+    const out = [];
+    for (const d of active.filter((x) => x.kind === 'declared')) {
+      for (const s of ctx.seasons.filter((x) => d.declaredIn(x))) {
+        for (const r of ctx.playerSeasons(s.id).filter((p) => p.appearances > 0)) {
+          out.push({ achievement_id: d.id, player_id: r.player_id, name: r.name, season_id: s.id });
+        }
+      }
+    }
+    return out;
+  }  // Career achievements earned, each with the season in which the threshold was crossed.
   function evaluateCareer(ctx) {
     const out = [];
     const teamHits = teamTotals(ctx);
@@ -401,6 +419,7 @@ function createAchievementEngine({ definitions = DEFAULT_DEFINITIONS, overrides 
     describe: (id) => (byId.has(id) ? meta(byId.get(id)) : null),
     evaluateSeason,
     evaluateCareer,
+    evaluateDeclared,
     upcoming,
   };
 }

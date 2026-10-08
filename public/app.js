@@ -78,13 +78,17 @@ $$('.view-toggle-btn').forEach((btn) => {
 });
 
 // ---------- KPI cards ----------
-// The selected season's current league position, shown on the League Points card. It belongs
-// to a season, so it is hidden when the cards cover every season (All-time).
+// The selected season's current league position (or LEAGUE CHAMPIONS, if declared), shown on
+// the League Points card. It belongs to a season, so it is hidden when the cards cover every
+// season (All-time).
 function showLeaguePosition() {
   const season = state.seasons.find((s) => s.id === state.currentSeasonId);
-  const text = season && !$('#allTimeToggle').checked ? season.league_position : '';
+  const shown = season && !$('#allTimeToggle').checked ? season : null;
+  const champions = !!(shown && shown.league_champions);
+  const text = champions ? 'LEAGUE CHAMPIONS' : shown && shown.league_position ? `Current league position: ${shown.league_position}` : '';
   const el = $('#kpiLeaguePosition');
-  el.textContent = text ? `Current league position: ${text}` : '';
+  el.textContent = text;
+  el.classList.toggle('kpi-champions', champions);
   el.hidden = !text;
 }
 
