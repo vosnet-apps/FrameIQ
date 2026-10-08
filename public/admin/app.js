@@ -941,7 +941,7 @@ async function loadSeasons() {
         <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
-        <td class="actions">${s.awards_published_at
+        <td class="actions awards-cell">${s.awards_published_at
           ? `<span class="pill">Published</span> <button class="secondary" data-publish="${s.id}" ${s.is_active ? 'disabled' : ''} title="${s.is_active ? ACTIVE_SEASON_TIP : 'Work the awards out again from the current results'}">Recalculate</button> <button class="secondary" data-unpublish="${s.id}">Unpublish</button>`
           : `<button data-publish="${s.id}" ${s.is_active ? 'disabled' : ''} title="${s.is_active ? ACTIVE_SEASON_TIP : 'Reveal this season\'s awards to everyone'}">Publish awards</button>`}</td>
         <td class="actions"><button class="danger" data-delseason="${s.id}">Delete</button></td>

@@ -908,7 +908,12 @@ input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 .badge-icon { font-size: 1.05rem; }
 .badge-count { background: var(--crimson); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 0.75rem; font-weight: 700; }
 
-#seasonsBody input[type=text] { min-width: 150px; }
+/* Seasons table: compact enough that every column, including the awards buttons, fits a laptop screen. */
+#tab-seasons .data-table th, #seasonsBody td { padding-left: 9px; padding-right: 9px; }
+#seasonsBody input[type=text] { min-width: 110px; }
+#seasonsBody input[type=date] { width: 138px; }
+#seasonsBody td.awards-cell { white-space: normal; min-width: 150px; }
+#seasonsBody td.awards-cell button { margin: 2px 4px 2px 0; }
 .partner-note { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
 select.pair-select:disabled { opacity: 0.45; cursor: not-allowed; }
 .pair-warnings { color: var(--amber-text); }
