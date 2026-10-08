@@ -2,14 +2,41 @@
 
 A small self-hosted web app for tracking a pool/snooker team's players, weekly match results, and stats — a public results page for anyone to view, plus an admin area for managing everything. Ships pre-loaded with demo data (fictional players/results) so you can see it working before entering your own.
 
-## Admin screenshots
+## Screenshots
 
-The public results page is what you'd share with your league — everything below is the admin side you manage it from, gated behind your own password.
+### The public site
 
-**Team Stats overview** — live win rate, points leader, league points, and a full performance table with per-player form.
+This is the page you share with your league. The sun/moon button switches between dark and light themes, and each visitor's choice is remembered.
+
+**Team stats** — win rate, points leader, league points, the season's league and division under the heading, the team's current league position on the League Points card, and a full performance table with per-player form.
+![Public team stats](docs/screenshots/public-stats.png)
+
+**League champions** — tick **Champions** on a season and the League Points card reads LEAGUE CHAMPIONS in gold. Everyone who played that season also gets a League Champions badge on their profile.
+![League champions card](docs/screenshots/league-champions.png)
+
+**Results / Fixtures** — played results plus upcoming weeks you've added without a score, sortable by any column.
+![Results and fixtures](docs/screenshots/public-results.png)
+
+**Partnerships** — how each doubles pair has done together this season.
+![Doubles partnerships](docs/screenshots/public-partnerships.png)
+
+**Awards** — season awards, team awards, milestones reached and what's coming up. Season awards stay hidden until you publish them at the end of the season.
+![Season awards](docs/screenshots/public-awards.png)
+
+**Player profile** — badges, career totals, season-by-season stats, doubles partners and full match history.
+![Player profile](docs/screenshots/player-profile.png)
+
+**Light theme** — the same page in the light theme.
+![Light theme](docs/screenshots/public-light.png)
+
+### The admin area
+
+Everything below is the admin side you manage it from, gated behind your own password.
+
+**Team Stats overview** — the same view you share, with the admin menu alongside.
 ![Admin stats overview](docs/screenshots/admin-stats.png)
 
-**Match Entry** — log each week's date, venue, opponent, score and BYE weeks in a couple of clicks.
+**Match Entry** — log each week's date, venue, opponent, score and BYE weeks, record who won each player's singles and doubles, and (optionally) who partnered whom in the doubles. Weeks without a score show as upcoming fixtures.
 ![Admin match entry](docs/screenshots/admin-match-entry.png)
 
 **Roster** — set who's playing each season, their role (Captain/Vice-Captain/Member) and pick status (Regular/Sub).
@@ -18,7 +45,7 @@ The public results page is what you'd share with your league — everything belo
 **Players** — the permanent player list: original-member flag, joined/left dates, notes.
 ![Admin players](docs/screenshots/admin-players.png)
 
-**Seasons & backup** — manage seasons and export/import the full dataset as JSON.
+**Seasons & backup** — each season's league, division, current league position and Champions flag, publishing a season's awards, and exporting/importing the full dataset as JSON.
 ![Admin seasons](docs/screenshots/admin-seasons.png)
 
 Admin access sits behind a password screen:
