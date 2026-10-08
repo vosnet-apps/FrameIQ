@@ -78,11 +78,22 @@ $$('.view-toggle-btn').forEach((btn) => {
 });
 
 // ---------- KPI cards ----------
+// The selected season's current league position, shown on the League Points card. It belongs
+// to a season, so it is hidden when the cards cover every season (All-time).
+function showLeaguePosition() {
+  const season = state.seasons.find((s) => s.id === state.currentSeasonId);
+  const text = season && !$('#allTimeToggle').checked ? season.league_position : '';
+  const el = $('#kpiLeaguePosition');
+  el.textContent = text ? `Current league position: ${text}` : '';
+  el.hidden = !text;
+}
+
 async function loadKpis() {
   const allTime = $('#allTimeToggle').checked;
   const url = allTime || !state.currentSeasonId ? '/api/stats/summary' : `/api/stats/summary?season_id=${state.currentSeasonId}`;
   const data = await api(url);
   renderKpis(data);
+  showLeaguePosition();
 }
 
 function pointsWord(n) {

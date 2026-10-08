@@ -371,13 +371,13 @@ app.get('/api/seasons', (req, res) => {
   res.json(all('SELECT * FROM seasons ORDER BY sort_order, id'));
 });
 
-// League name / division are short optional labels: blank clears them, undefined leaves them alone.
+// League name / division / position are short optional labels: blank clears them, undefined leaves them alone.
 const LEAGUE_TEXT_MAX = 80;
 function cleanLeagueText(value) {
   if (value === undefined) return { value: undefined };
   if (value === null || String(value).trim() === '') return { value: null };
   const text = String(value).trim();
-  if (text.length > LEAGUE_TEXT_MAX) return { error: `Keep league and division to ${LEAGUE_TEXT_MAX} characters or fewer.` };
+  if (text.length > LEAGUE_TEXT_MAX) return { error: `Keep league, division and position to ${LEAGUE_TEXT_MAX} characters or fewer.` };
   return { value: text };
 }
 
@@ -386,13 +386,15 @@ app.post('/api/seasons', requireAdmin, (req, res) => {
   if (!name || !name.trim()) return res.status(400).json({ error: 'name is required' });
   const league = cleanLeagueText(req.body.league_name);
   const division = cleanLeagueText(req.body.division);
-  if (league.error || division.error) return res.status(400).json({ error: league.error || division.error });
+  const position = cleanLeagueText(req.body.league_position);
+  const labelError = league.error || division.error || position.error;
+  if (labelError) return res.status(400).json({ error: labelError });
   const maxOrder = get('SELECT COALESCE(MAX(sort_order), 0) AS m FROM seasons').m;
   try {
     if (is_active) run('UPDATE seasons SET is_active = 0');
     const result = run(
-      'INSERT INTO seasons (name, start_date, end_date, is_active, sort_order, league_name, division) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name.trim(), start_date || null, end_date || null, is_active ? 1 : 0, maxOrder + 1, league.value ?? null, division.value ?? null]
+      'INSERT INTO seasons (name, start_date, end_date, is_active, sort_order, league_name, division, league_position) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [name.trim(), start_date || null, end_date || null, is_active ? 1 : 0, maxOrder + 1, league.value ?? null, division.value ?? null, position.value ?? null]
     );
     res.status(201).json(get('SELECT * FROM seasons WHERE id = ?', [Number(result.lastInsertRowid)]));
   } catch (err) {
@@ -406,10 +408,12 @@ app.put('/api/seasons/:id', requireAdmin, (req, res) => {
   const { name, start_date, end_date, is_active } = req.body;
   const league = cleanLeagueText(req.body.league_name);
   const division = cleanLeagueText(req.body.division);
-  if (league.error || division.error) return res.status(400).json({ error: league.error || division.error });
+  const position = cleanLeagueText(req.body.league_position);
+  const labelError = league.error || division.error || position.error;
+  if (labelError) return res.status(400).json({ error: labelError });
   if (is_active) run('UPDATE seasons SET is_active = 0');
   run(
-    'UPDATE seasons SET name = ?, start_date = ?, end_date = ?, is_active = ?, league_name = ?, division = ? WHERE id = ?',
+    'UPDATE seasons SET name = ?, start_date = ?, end_date = ?, is_active = ?, league_name = ?, division = ?, league_position = ? WHERE id = ?',
     [
       name ?? existing.name,
       start_date === undefined ? existing.start_date : start_date,
@@ -417,6 +421,7 @@ app.put('/api/seasons/:id', requireAdmin, (req, res) => {
       is_active === undefined ? existing.is_active : (is_active ? 1 : 0),
       league.value === undefined ? existing.league_name : league.value,
       division.value === undefined ? existing.division : division.value,
+      position.value === undefined ? existing.league_position : position.value,
       req.params.id,
     ]
   );

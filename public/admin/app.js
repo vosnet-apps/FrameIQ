@@ -185,11 +185,22 @@ $$('.view-toggle-btn').forEach((btn) => {
 });
 
 // ---------- KPI cards ----------
+// The selected season's current league position, shown on the League Points card. It belongs
+// to a season, so it is hidden when the cards cover every season (All-time).
+function showLeaguePosition() {
+  const season = state.seasons.find((s) => s.id === state.currentSeasonId);
+  const text = season && !$('#allTimeToggle').checked ? season.league_position : '';
+  const el = $('#kpiLeaguePosition');
+  el.textContent = text ? `Current league position: ${text}` : '';
+  el.hidden = !text;
+}
+
 async function loadKpis() {
   const allTime = $('#allTimeToggle').checked;
   const url = allTime || !state.currentSeasonId ? '/api/stats/summary' : `/api/stats/summary?season_id=${state.currentSeasonId}`;
   const data = await api(url);
   renderKpis(data);
+  showLeaguePosition();
 }
 
 function pointsWord(n) {
@@ -921,6 +932,7 @@ async function loadSeasons() {
         <td>${escapeHtml(s.name)}</td>
         <td><input type="text" data-league="${s.id}" value="${escapeHtml(s.league_name || '')}" placeholder="—" maxlength="80" /></td>
         <td><input type="text" data-division="${s.id}" value="${escapeHtml(s.division || '')}" placeholder="—" maxlength="80" /></td>
+        <td><input type="text" data-position="${s.id}" value="${escapeHtml(s.league_position || '')}" placeholder="e.g. 1st" maxlength="80" /></td>
         <td><input type="date" data-start="${s.id}" value="${escapeHtml(s.start_date || '')}" /></td>
         <td><input type="date" data-end="${s.id}" value="${escapeHtml(s.end_date || '')}" /></td>
         <td><input type="checkbox" data-active="${s.id}" ${s.is_active ? 'checked' : ''} /></td>
@@ -932,11 +944,15 @@ async function loadSeasons() {
     )
     .join('');
 
-  for (const [attr, field] of [['data-league', 'league_name'], ['data-division', 'division']]) {
+  for (const [attr, field] of [['data-league', 'league_name'], ['data-division', 'division'], ['data-position', 'league_position']]) {
     body.querySelectorAll(`[${attr}]`).forEach((el) =>
       el.addEventListener('change', async () => {
         try {
-          await api(`/api/seasons/${el.getAttribute(attr)}`, { method: 'PUT', body: JSON.stringify({ [field]: el.value }) });
+          const id = Number(el.getAttribute(attr));
+          await api(`/api/seasons/${id}`, { method: 'PUT', body: JSON.stringify({ [field]: el.value }) });
+          const cached = state.seasons.find((x) => x.id === id);
+          if (cached) cached[field] = el.value.trim() || null;
+          showLeaguePosition();
         } catch (err) {
           alert(err.message);
         }

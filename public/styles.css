@@ -911,6 +911,7 @@ input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 select.pair-select:disabled { opacity: 0.45; cursor: not-allowed; }
 .pair-warnings { color: var(--amber-text); }
 .pair-warnings div { margin-top: 4px; }
+.kpi-position { color: var(--text); font-weight: 600; margin-top: 4px; }
 .league-line { color: var(--muted); font-size: 0.9rem; margin: -6px 0 14px; }
 
 .player-badges { display: flex; gap: 6px; flex-wrap: wrap; }
