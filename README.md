@@ -109,6 +109,8 @@ Points = (singles won × points-per-singles-win) + (doubles won × points-per-do
 
 `import/seed_data.json` ships with two example seasons of realistic-looking (but entirely fictional) match data, used to populate the database the first time you run `npm run seed`. Feel free to edit this file before seeding, or just clear it out and build your own season up through the admin UI instead.
 
+`npm run seed:demo` loads the same data and then fills in the newer features, so a demo shows everything: league details and position, a Champions season, upcoming fixtures (dated from today), doubles pairs and published season awards. It does nothing if the database already has players, so it is safe to run on every start of a throwaway demo site, for example with the start command `npm run seed:demo && npm start` and no persistent volume. If you run a public demo, set `ADMIN_PASSWORD` to a long random value you keep to yourself, so the admin area stays locked.
+
 ## Putting it online
 
 This app is ready to deploy as-is (it's just a small Node/Express server), but a few things are worth knowing before you do:

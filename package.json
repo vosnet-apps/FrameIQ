@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "seed": "node src/seed.js"
+    "seed": "node src/seed.js",
+    "seed:demo": "node src/seed-demo.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
