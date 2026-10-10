@@ -199,12 +199,22 @@ function showLeaguePosition() {
   el.hidden = !text;
 }
 
+// The CSV links follow the season picked in the top bar.
+function updateExportLinks() {
+  const id = state.currentSeasonId;
+  for (const [el, kind] of [['#exportPlayers', 'players'], ['#exportResults', 'results'], ['#exportEntries', 'entries']]) {
+    const link = $(el);
+    link.href = id ? `/api/seasons/${id}/export/${kind}.csv` : '#';
+  }
+}
+
 async function loadKpis() {
   const allTime = $('#allTimeToggle').checked;
   const url = allTime || !state.currentSeasonId ? '/api/stats/summary' : `/api/stats/summary?season_id=${state.currentSeasonId}`;
   const data = await api(url);
   renderKpis(data);
   showLeaguePosition();
+  updateExportLinks();
 }
 
 function pointsWord(n) {

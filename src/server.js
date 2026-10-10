@@ -945,7 +945,100 @@ app.get('/api/stats/awards', (req, res) => {
   });
 });
 
-// ---------- Backup / restore ----------
+// ---------- CSV export (one season, for spreadsheets and printing) ----------
+// Admin only. A text cell that starts with = + - or @ gets a leading ' so a spreadsheet can't run
+// a name or opponent typed in as a formula. The UTF-8 BOM and CRLF line ends make Excel open it cleanly.
+function csvCell(value) {
+  if (value === null || value === undefined) return '';
+  let text = String(value);
+  if (typeof value === 'string' && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function sendCsv(res, season, kind, header, rows) {
+  const slug = season.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'season';
+  const text = '\uFEFF' + [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="${slug}-${kind}.csv"` });
+  res.send(text);
+}
+
+function seasonForExport(req, res) {
+  const season = get('SELECT * FROM seasons WHERE id = ?', [Number(req.params.id)]);
+  if (!season) res.status(404).json({ error: 'season not found' });
+  return season;
+}
+
+app.get('/api/seasons/:id/export/players.csv', requireAdmin, (req, res) => {
+  const season = seasonForExport(req, res);
+  if (!season) return;
+  const settings = getSettings();
+  const rows = all(STATS_SQL, [settings.points_per_singles_win, settings.points_per_doubles_win, season.id, season.id]).map((r) => [
+    r.name,
+    r.appearances,
+    r.singles_won,
+    r.doubles_won,
+    r.total_points,
+    r.appearances > 0 ? Number((r.total_points / r.appearances).toFixed(2)) : '',
+    r.frames_with_known_result > 0 ? Number(((r.frames_won_known / r.frames_with_known_result) * 100).toFixed(1)) : '',
+  ]);
+  sendCsv(res, season, 'players', ['Player', 'Appearances', 'Singles won', 'Doubles won', 'Points', 'Points per game', 'Frame win %'], rows);
+});
+
+app.get('/api/seasons/:id/export/results.csv', requireAdmin, (req, res) => {
+  const season = seasonForExport(req, res);
+  if (!season) return;
+  const weeks = all(
+    `SELECT w.*, (SELECT COUNT(*) FROM match_entries e WHERE e.week_id = w.id) AS entry_count
+     FROM match_weeks w
+     WHERE w.season_id = ? AND w.is_aggregate = 0
+     ORDER BY (w.week_number IS NULL), w.week_number`,
+    [season.id]
+  );
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = weeks.map((w) => {
+    const scored = w.score_for != null && w.score_against != null;
+    let result;
+    if (w.is_bye) result = 'BYE';
+    else if (scored) result = w.score_for > w.score_against ? 'Win' : w.score_for < w.score_against ? 'Loss' : 'Draw';
+    else if (w.entry_count > 0) result = 'No score';
+    else if (/^\d{4}-\d{2}-\d{2}$/.test(w.match_date || '') && w.match_date < today) result = 'Awaiting result';
+    else result = 'Upcoming';
+    return [w.week_number, w.match_date, w.venue, w.opponent, scored ? w.score_for : '', scored ? w.score_against : '', result];
+  });
+  sendCsv(res, season, 'results', ['Week', 'Date', 'Venue', 'Opponent', 'Score for', 'Score against', 'Result'], rows);
+});
+
+app.get('/api/seasons/:id/export/entries.csv', requireAdmin, (req, res) => {
+  const season = seasonForExport(req, res);
+  if (!season) return;
+  const entries = all(
+    `SELECT w.week_number, w.label, w.match_date, w.opponent, w.is_aggregate, p.name,
+            e.singles_won, e.singles_lost, e.doubles_won, e.doubles_lost, e.doubles_pair,
+            (SELECT p2.name FROM match_entries x JOIN players p2 ON p2.id = x.player_id
+              WHERE x.week_id = e.week_id AND x.doubles_pair = e.doubles_pair AND x.player_id != e.player_id
+                AND (SELECT COUNT(*) FROM match_entries y WHERE y.week_id = e.week_id AND y.doubles_pair = e.doubles_pair) = 2) AS partner
+     FROM match_entries e
+     JOIN match_weeks w ON w.id = e.week_id
+     JOIN players p ON p.id = e.player_id
+     WHERE w.season_id = ?
+     ORDER BY (w.week_number IS NULL), w.week_number, p.name COLLATE NOCASE`,
+    [season.id]
+  );
+  // An imported season-total row has no single week, so it is labelled instead; unknown losses stay blank.
+  const rows = entries.map((e) => [
+    e.is_aggregate ? e.label : e.week_number,
+    e.match_date,
+    e.opponent,
+    e.name,
+    e.singles_won,
+    e.singles_lost,
+    e.doubles_won,
+    e.doubles_lost,
+    e.doubles_pair,
+    e.partner,
+  ]);
+  sendCsv(res, season, 'match-entries', ['Week', 'Date', 'Opponent', 'Player', 'Singles won', 'Singles lost', 'Doubles won', 'Doubles lost', 'Doubles pair', 'Doubles partner'], rows);
+});// ---------- Backup / restore ----------
 // Used to move data between environments (e.g. local -> a fresh host), since the
 // database file itself typically isn't something you can just copy across hosts.
 const BACKUP_TABLES = ['players', 'seasons', 'season_rosters', 'match_weeks', 'match_entries', 'season_awards'];

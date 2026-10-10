@@ -918,6 +918,8 @@ input[type=date]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 select.pair-select:disabled { opacity: 0.45; cursor: not-allowed; }
 .pair-warnings { color: var(--amber-text); }
 .pair-warnings div { margin-top: 4px; }
+.export-row { margin: 0 0 12px; color: var(--muted); font-size: 0.85rem; }
+.export-row a { color: var(--crimson-light); }
 .kpi-position { color: var(--text); font-weight: 600; margin-top: 4px; }
 .kpi-position.kpi-champions { color: var(--gold-text); font-weight: 800; letter-spacing: 0.05em; }
 .badge.badge-gold { border-color: var(--gold-text); color: var(--gold-text); }
