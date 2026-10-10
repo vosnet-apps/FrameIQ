@@ -1,7 +1,7 @@
 {
   "name": "frameiq",
   "license": "AGPL-3.0-only",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "FrameIQ - pool/snooker team performance tracker: players, matches, stats, and a public results site. Team name, logo and colours are set from the admin Settings page.",
   "type": "module",
   "private": true,
