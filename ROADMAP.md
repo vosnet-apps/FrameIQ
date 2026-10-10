@@ -33,6 +33,10 @@ Ideas for future development. Not scheduled, not promises — just a running lis
 - [ ] **PWA manifest** — so "Add to Home Screen" gives a proper app icon; this is a phone-first tool for most players.
 - [ ] **Discord/Slack webhook on match save** — auto-post "Week 6: Won 6-3 vs The Sharpshooters" when an admin records a result, since most teams already coordinate in a group chat.
 
+## Under consideration
+
+- [ ] **Multiple teams for one captain** — a captain who plays for several teams in different leagues can track each team's stats independently. The leading approach is one database per team inside a single deployment, chosen by the URL (for example `/t/team-name/`), with a hub page listing the captain's teams. Each team keeps its own players, seasons, scoring, branding and awards. Not yet decided whether this belongs in the free app or in FrameIQ+.
+
 ---
 
 *Captured 2026-09-17, after Phase 3 (configurable scoring settings + player profile pages) shipped, as FrameIQ moved from "our team's tool" to a public template.*
