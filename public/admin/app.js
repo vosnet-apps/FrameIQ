@@ -788,7 +788,8 @@ async function loadRoster() {
   const rosterIds = new Set(roster.map((r) => r.player_id));
   const sel = $('#rosterPlayerSelect');
   sel.innerHTML = players
-    .filter((p) => !rosterIds.has(p.id))
+    // Players with a left date are no longer picked, so they are not offered here.
+    .filter((p) => !rosterIds.has(p.id) && !p.left_date)
     .map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
     .join('');
 
@@ -849,7 +850,7 @@ async function updateRoster(playerId) {
 $('#addRosterForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const player_id = Number($('#rosterPlayerSelect').value);
-  if (!player_id) return alert('No available players to add (everyone is already on this roster).');
+  if (!player_id) return alert('No players available to add. Everyone is either already on this roster or has a left date set on the Players page.');
   const role = $('#rosterRoleSelect').value;
   const pick_status = $('#rosterPickSelect').value;
   await api(`/api/seasons/${state.currentSeasonId}/roster`, {
