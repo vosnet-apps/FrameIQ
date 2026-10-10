@@ -115,10 +115,36 @@ Points = (singles won × points-per-singles-win) + (doubles won × points-per-do
 
 This app is ready to deploy as-is (it's just a small Node/Express server), but a few things are worth knowing before you do:
 
-- Whatever host you pick needs to run a persistent Node process (Render, Railway, Fly.io, a VPS, etc.) — not a static site host, since this has a real backend and database file.
+- Whatever host you pick needs to run a persistent Node process (Render, Railway, Fly.io, a VPS, etc.) — not a static site host, since this has a real backend and database file. It needs Node 24 or newer.
 - Set `ADMIN_PASSWORD` and `SESSION_SECRET` as environment variables on the host (the same names as in `.env`) rather than uploading your `.env` file.
 - `data/pool.db` needs to live on persistent storage on whatever host you choose — some platforms wipe the filesystem on every deploy, which would lose your data. Check your host supports a persistent disk/volume, and point `DATA_DIR` at it.
 - The app works fine over plain HTTP for local use; once it's on a public domain, put it behind HTTPS (most hosts do this for you automatically).
+
+### Deploy your own on Railway
+
+The simplest route for most teams is to **fork this repository, then deploy your fork**. Fork rather than just clone: a fork stays linked to the original, so you can pull in new releases with one click. You don't need to edit any code, because your team name, logo, colours and scoring are all set from the admin **Settings** page.
+
+1. **Fork the repository.** On GitHub, use **Fork** at the top right of this page to copy it into your own account.
+2. **Create a Railway project.** In [Railway](https://railway.com), choose **New Project → Deploy from GitHub repo** and pick your fork. Railway builds it and starts it with `npm start`.
+3. **Set your variables.** In the service's **Variables** tab, add:
+   - `ADMIN_PASSWORD` — a strong password of your own. The app won't start without it.
+   - `DATA_DIR` — `/data` (the mount path of the volume in the next step).
+   - `SESSION_SECRET` — optional. If you leave it out, a random one is generated and kept in the database.
+4. **Add a volume.** In the service, add a **Volume** and mount it at `/data`. Don't skip this: without it the database is wiped every time you deploy.
+5. **Open it.** In the service's **Settings → Networking**, generate a domain (or add your own custom domain). HTTPS is included.
+6. **Log in and set it up.** Go to `/admin/login`, then open **Settings** to add your team name, logo and colours. A new deployment starts with an empty database, so add your Players, Seasons, Roster and Match Entry from there.
+
+### Keeping it up to date
+
+New versions are announced on the [Releases page](https://github.com/vosnet-apps/FrameIQ/releases). To upgrade:
+
+1. In **Admin → Seasons**, choose **Export all data** and keep the file. Database changes are applied automatically on start-up, but a backup is cheap insurance.
+2. On your fork's GitHub page, choose **Sync fork → Update branch**.
+3. Railway notices the change and redeploys by itself.
+
+### A note on the licence
+
+FrameIQ is AGPL-3.0. If you change the code and run it as a service for other people, you need to make your changes available to them. A public fork does that without any extra work.
 
 ## Licence
 
